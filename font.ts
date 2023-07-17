@@ -262,4 +262,18 @@ namespace fancyText {
             x += charWidth + font.letterSpacing;
         }
     }
+
+    export function getTextWidth(font: fancyText.BaseFont, text: string) {
+        let w = 0;
+        for (let i = 0; i < text.length; i++) {
+            const code = text.charCodeAt(i);
+            if (code === 32 || !font.isInFont(code)) {
+                w += font.wordSpacing;
+            }
+            else {
+                w += font.charWidth(code) + font.letterSpacing;
+            }
+        }
+        return w;
+    }
 }
