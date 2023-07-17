@@ -2,6 +2,9 @@
     "name": "hack-project",
     "version": "0.0.0",
     "files": [
+        "font.ts",
+        "parse.ts",
+        "draw.ts",
         "main.ts"
     ],
     "supportedTargets": [
