@@ -1,6 +1,6 @@
 {
     "name": "arcade-fancy-text",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "files": [
         "font.ts",
         "parse.ts",
@@ -8,6 +8,9 @@
         "sprite.ts",
         "api.ts",
         "main.ts"
+    ],
+    "testFiles": [
+        "test.ts"
     ],
     "supportedTargets": [
         "arcade"

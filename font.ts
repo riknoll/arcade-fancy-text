@@ -124,27 +124,27 @@ namespace fancyText {
     }
 
     export class Font extends BaseFont {
-        static HEADER_LENGTH = 14;
-        static LOOKUP_TABLE_ENTRY_LENGTH = 2;
+        static HEADER_LENGTH = 12;
+        static LOOKUP_TABLE_ENTRY_LENGTH = 4;
 
         constructor(public buffer: Buffer) {
             super();
         }
 
         get lineHeight() {
-            return this.buffer[8];
+            return this.buffer[6];
         }
 
         get baselineOffset() {
-            return this.buffer[9];
+            return this.buffer[7];
         }
 
         get letterSpacing() {
-            return this.buffer[10];
+            return this.buffer[8];
         }
 
         get wordSpacing() {
-            return this.buffer[11];
+            return this.buffer[9];
         }
 
         charWidth(charCode: number) {
@@ -160,15 +160,14 @@ namespace fancyText {
         }
 
         isInFont(charCode: number) {
-            return this.charInRange(charCode) && this.buffer.getNumber(NumberFormat.UInt16LE, this.charOffset(charCode)) !== 0xffff
+            return this.charOffset(charCode) !== -1;
         }
 
         writeCharacterBytes(target: Buffer, charCode: number,) {
-            if (!this.isInFont(charCode)) return target;
+            const offset = this.charOffset(charCode);
+            if (offset === -1) return target;
 
-            const bitmapEntryStart = this.charBitmapAddress(charCode);
-
-            const charOffset = this.charOffset(charCode);
+            const bitmapEntryStart = this.buffer.getNumber(NumberFormat.UInt16LE, offset) + this.bitmapStart;
 
             const bitmapWidth = this.buffer[bitmapEntryStart + 1];
             const bitmapHeight = this.buffer[bitmapEntryStart + 2];
@@ -188,33 +187,46 @@ namespace fancyText {
         }
 
         bufferSize() {
-            return 8 + this.buffer.getNumber(NumberFormat.UInt16LE, 12);
+            return 8 + this.buffer.getNumber(NumberFormat.UInt16LE, 10);
         }
 
-        protected get charRangeStart() {
+        protected get numCharacters() {
             return this.buffer.getNumber(
                 NumberFormat.UInt16LE,
                 4
             );
         }
 
-        protected get charRangeEnd() {
-            return this.buffer.getNumber(
-                NumberFormat.UInt16LE,
-                6
-            );
-        }
-
-        protected charInRange(charCode: number) {
-            return charCode >= this.charRangeStart && charCode <= this.charRangeEnd
-        }
-
         protected get bitmapStart() {
-            return Font.HEADER_LENGTH + Font.LOOKUP_TABLE_ENTRY_LENGTH * ((this.charRangeEnd - this.charRangeStart) + 1)
+            return Font.HEADER_LENGTH + Font.LOOKUP_TABLE_ENTRY_LENGTH * this.numCharacters
         }
 
         protected charOffset(charCode: number) {
-            return Font.HEADER_LENGTH + Font.LOOKUP_TABLE_ENTRY_LENGTH * (charCode - this.charRangeStart);
+            let start = 0;
+            let end = this.numCharacters;
+            let guess = this.numCharacters >> 1;
+
+            while (true) {
+                // console.log(`${charCode} S=${start} E=${end} G=${guess}`)
+                if (start === end) {
+                    return -1;
+                }
+
+                const current = this.buffer.getNumber(NumberFormat.UInt16LE, Font.HEADER_LENGTH + Font.LOOKUP_TABLE_ENTRY_LENGTH * guess);
+                // console.log("CURRENT " + current)
+                if (current === charCode) {
+                    // console.log("FOUND IT!")
+                    return Font.HEADER_LENGTH + Font.LOOKUP_TABLE_ENTRY_LENGTH * guess + 2;
+                }
+                else if (charCode < current) {
+                    end = guess;
+                    guess = ((end - start) >> 1) + start;
+                }
+                else {
+                    start = guess;
+                    guess = ((end - start) >> 1) + start;
+                }
+            }
         }
 
         protected charBitmapAddress(charCode: number) {
