@@ -1,5 +1,5 @@
 //% block="Fancy Text"
-//% color="#345eeb"
+//% color="#bf42f5"
 //$ icon="\uf031"
 namespace fancyText {
     export enum TextSpeed {
@@ -23,6 +23,8 @@ namespace fancyText {
     //% color.shadow=colorindexpicker
     //% font.shadow=fancy_text__fontPicker
     //% blockSetVariable=myTextSprite
+    //% group=Create
+    //% weight=100
     export function create(text: string, maxWidth?: number, color?: number, font?: BaseFont): TextSprite {
         const sprite = new TextSprite(text);
 
@@ -30,12 +32,17 @@ namespace fancyText {
         if (color) sprite.setColor(color);
         if (font) sprite.setFont(font);
 
+        sprite.x = screen.width >> 1;
+        sprite.y = screen.height >> 1;
+
         return sprite;
     }
 
     //% shim=TD_ID
     //% blockId=fancy_text__fontPicker
     //% block="$font"
+    //% group=Create
+    //% weight=0
     export function __fontPicker(font: BaseFont): BaseFont {
         return font;
     }
@@ -43,6 +50,8 @@ namespace fancyText {
     //% shim=TD_ID
     //% blockId=fancy_text__speedPicker
     //% block="$speed"
+    //% group=Animate
+    //% weight=0
     export function __speedPicker(speed: TextSpeed): number {
         return speed;
     }
