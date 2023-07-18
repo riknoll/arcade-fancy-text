@@ -106,6 +106,7 @@ namespace fancyText {
         //% font.shadow=fancy_text__fontPicker
         setFont(font: BaseFont) {
             this.defaultFont = font;
+            this.recalculateLines();
         }
 
         //% blockId=fancy_text_animate_at_speed
@@ -170,7 +171,7 @@ namespace fancyText {
         }
 
         protected recalculateLines() {
-            this.lines = getLines(this.text, this.spans, this.maxWidth);
+            this.lines = getLines(this.text, this.spans, this.maxWidth, this.defaultFont || getDefaultFont(this.text));
             let width = 0;
             let height = 0;
 
@@ -216,5 +217,9 @@ namespace fancyText {
             }
         }
         return undefined;
+    }
+
+    export function getDefaultFont(text: string) {
+        return new fancyText.LegacyFont(image.getFontForText(text));
     }
 }

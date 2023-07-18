@@ -71,7 +71,7 @@ namespace fancyText {
         }
 
         charYOffset(charCode: number) {
-            return this.font.charHeight;
+            return -this.font.charHeight;
         }
 
         isInFont(charCode: number) {
@@ -219,48 +219,6 @@ namespace fancyText {
 
         protected charBitmapAddress(charCode: number) {
             return this.buffer.getNumber(NumberFormat.UInt16LE, this.charOffset(charCode)) + this.bitmapStart;
-        }
-    }
-
-    export function printText(target: Image, font: BaseFont, text: string, x: number, y: number, color: number) {
-        const x0 = x;
-
-        let charCode: number;
-        let charWidth: number;
-        const imgBuf = control.createBuffer(font.bufferSize());
-        imgBuf[0] = 0x87
-        imgBuf[1] = 1
-
-        for (let i = 0; i < text.length; i++) {
-            charCode = text.charCodeAt(i);
-            // space
-            if (charCode === 32) {
-                x += font.wordSpacing;
-                continue;
-            }
-            else if (charCode === 10) {
-                y += font.lineHeight;
-                x = x0;
-                continue;
-            }
-
-            if (!font.isInFont(charCode)) {
-                target.drawRect(x, y, font.wordSpacing, font.baselineOffset, color);
-                x += font.wordSpacing;
-                continue;
-            }
-
-            charWidth = font.charWidth(charCode);
-            if (charWidth === 0) continue;
-
-            target.drawIcon(
-                font.writeCharacterBytes(imgBuf, charCode),
-                x + font.charXOffset(charCode),
-                y + font.baselineOffset + font.charYOffset(charCode),
-                color
-            );
-
-            x += charWidth + font.letterSpacing;
         }
     }
 

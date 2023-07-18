@@ -91,6 +91,12 @@ namespace fancyText {
             }
         }
 
+        const lastSpan = spans[spans.length - 1];
+
+        if (!lastSpan || state.spanStart !== lastSpan.offset) {
+            spans.push(new Span(state.spanStart, state.offset - state.spanStart, state.flags));
+        }
+
         return spans;
     }
 
@@ -269,9 +275,7 @@ namespace fancyText {
     }
 
 
-    export function getLines(text: string, spans: Span[], maxWidth: number) {
-        const defaultFont = getDefaultFont(text);
-
+    export function getLines(text: string, spans: Span[], maxWidth: number, defaultFont: BaseFont) {
         const lines: Line[] = [];
         let currentLine = new Line();
 

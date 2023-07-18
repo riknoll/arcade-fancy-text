@@ -83,6 +83,8 @@ namespace fancyText {
             }
         }
         if (flags & (Tag.Wavy | Tag.Shaky | Tag.Rainbow)) {
+            const width = getTextWidth(font, text) / text.length;
+
             const tick = Math.idiv(game.runtime(), 100);
             let x = left;
 
@@ -98,12 +100,12 @@ namespace fancyText {
                     y += Math.sin(((x - absoluteLeft) / 10) + tick) * 2;
                 }
                 if (flags & Tag.Rainbow) {
-                    color = rainbow.getPixel((Math.idiv(x - absoluteLeft, font.wordSpacing) + tick) % rainbow.width, 0);
+                    color = rainbow.getPixel((Math.idiv(x - absoluteLeft, width) + tick) % rainbow.width, 0);
                 }
                 const char = text.charAt(i);
                 const code = text.charCodeAt(i);
 
-                fancyText.printText(screen, font, char, x, y, color);
+                printText(screen, font, char, x, y, color);
 
                 if (char == " " || !font.isInFont(code)) {
                     x += font.wordSpacing;
@@ -114,10 +116,53 @@ namespace fancyText {
             }
         }
         else if (length < text.length) {
-            fancyText.printText(screen, font, text.substr(0, length), left, top, color);
+            printText(screen, font, text.substr(0, length), left, top, color);
         }
         else {
-            fancyText.printText(screen, font, text, left, top, color);
+            printText(screen, font, text, left, top, color);
         }
     }
+
+    function printText(target: Image, font: BaseFont, text: string, x: number, y: number, color: number) {
+        const x0 = x;
+
+        let charCode: number;
+        let charWidth: number;
+        const imgBuf = control.createBuffer(font.bufferSize());
+        imgBuf[0] = 0x87
+        imgBuf[1] = 1
+
+        for (let i = 0; i < text.length; i++) {
+            charCode = text.charCodeAt(i);
+            // space
+            if (charCode === 32) {
+                x += font.wordSpacing;
+                continue;
+            }
+            else if (charCode === 10) {
+                y += font.lineHeight;
+                x = x0;
+                continue;
+            }
+
+            if (!font.isInFont(charCode)) {
+                target.drawRect(x, y, font.wordSpacing, font.baselineOffset, color);
+                x += font.wordSpacing;
+                continue;
+            }
+
+            charWidth = font.charWidth(charCode);
+            if (charWidth === 0) continue;
+
+            target.drawIcon(
+                font.writeCharacterBytes(imgBuf, charCode),
+                x + font.charXOffset(charCode),
+                y + font.baselineOffset + font.charYOffset(charCode),
+                color
+            );
+
+            x += charWidth + font.letterSpacing;
+        }
+    }
+
 }
