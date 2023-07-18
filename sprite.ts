@@ -11,6 +11,7 @@ namespace fancyText {
         protected animationSpeed: number;
         protected animationOffset: number;
         protected animationTimer: number;
+        protected defaultFont: BaseFont;
 
         constructor(public text: string) {
             super(img`1`, SpriteKind.Text);
@@ -21,7 +22,7 @@ namespace fancyText {
         }
 
         draw(drawLeft: number, drawTop: number) {
-            const font = getDefaultFont(this.text);
+            const font = this.defaultFont || getDefaultFont(this.text);
             drawFontText(drawLeft, drawTop, this.text, this.lines, this.color, font, this.animationSpeed ? this.animationOffset : this.text.length);
         }
 
@@ -52,35 +53,77 @@ namespace fancyText {
             return length;
         }
 
+        //% blockId=fancy_text_set_max_width
+        //% block="$this set max width $maxWidth"
+        //% this.shadow=variables_get
+        //% this.defl=myTextSprite
+        //% maxWidth.defl="100"
         setMaxWidth(maxWidth: number) {
             this.maxWidth = maxWidth;
             this.recalculateLines();
         }
 
+        //% blockId=fancy_text_set_text
+        //% block="$this set text $text"
+        //% this.shadow=variables_get
+        //% this.defl=myTextSprite
+        //% text.defl="abc"
         setText(text: string) {
             this.text = text;
             this.spans = getSpans(text);
             this.recalculateLines();
         }
 
+        //% blockId=fancy_text_get_text
+        //% block="$this text"
+        //% this.shadow=variables_get
+        //% this.defl=myTextSprite
         getText() {
             return this.text;
         }
 
+        //% blockId=fancy_text_set_color
+        //% block="$this set color $color"
+        //% this.shadow=variables_get
+        //% this.defl=myTextSprite
+        //% color.shadow=colorindexpicker
         setColor(color: number) {
             this.color = color;
         }
 
+        //% blockId=fancy_text_get_color
+        //% block="$this color"
+        //% this.shadow=variables_get
+        //% this.defl=myTextSprite
         getColor(): number {
             return this.color;
         }
 
+        //% blockId=fancy_text_set_font
+        //% block="$this set font $font"
+        //% this.shadow=variables_get
+        //% this.defl=myTextSprite
+        //% font.shadow=fancy_text__fontPicker
+        setFont(font: BaseFont) {
+            this.defaultFont = font;
+        }
+
+        //% blockId=fancy_text_animate_at_speed
+        //% block="$this animate $charactersPerSecond"
+        //% this.shadow=variables_get
+        //% this.defl=myTextSprite
+        //% charactersPerSecond.shadow=fancy_text__speedPicker
         animateAtSpeed(charactersPerSecond: number) {
             this.animationSpeed = charactersPerSecond;
             this.animationOffset = 0;
             this.animationTimer = this.getTimerAtOffset(0);
         }
 
+        //% blockId=fancy_text_animate_for_time
+        //% block="$this animate for $timeMillis ms"
+        //% this.shadow=variables_get
+        //% this.defl=myTextSprite
+        //% timeMillis.shadow=timePicker
         animateForTime(timeMillis: number) {
             let length = 0;
             for (const line of this.lines) {
@@ -105,6 +148,27 @@ namespace fancyText {
             this.animateAtSpeed(length * 1000 / timeMillis)
         }
 
+        //% blockId=fancy_text_remaining_animation_time
+        //% block="$this animation millis left"
+        //% this.shadow=variables_get
+        //% this.defl=myTextSprite
+        remainingAnimationTime(): number {
+            if (!this.animationSpeed) return 0;
+
+            let time = this.animationTimer;
+            let i = 0;
+            for (const line of this.lines) {
+                for (const span of line.spans) {
+                    if (i > this.animationOffset) {
+                        time += this.getTimerAtOffset(i);
+                    }
+                    i += span.length
+                }
+            }
+
+            return time;
+        }
+
         protected recalculateLines() {
             this.lines = getLines(this.text, this.spans, this.maxWidth);
             let width = 0;
@@ -117,8 +181,8 @@ namespace fancyText {
             this.setDimensions(width, height)
         }
 
-        protected getTimerAtOffset(offest: number) {
-            const span = getSpanAtOffset(this.lines, offest);
+        protected getTimerAtOffset(offset: number) {
+            const span = getSpanAtOffset(this.lines, offset);
 
             let timer = 1000 / this.animationSpeed;
 

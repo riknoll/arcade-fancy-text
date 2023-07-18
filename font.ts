@@ -1,4 +1,5 @@
 namespace fancyText {
+    //% fixedInstances
     export class BaseFont {
         constructor() {
         }
@@ -263,9 +264,11 @@ namespace fancyText {
         }
     }
 
-    export function getTextWidth(font: fancyText.BaseFont, text: string) {
+    export function getTextWidth(font: fancyText.BaseFont, text: string, start = 0, end?: number) {
+        if (!end) end = text.length;
+
         let w = 0;
-        for (let i = 0; i < text.length; i++) {
+        for (let i = start; i < end; i++) {
             const code = text.charCodeAt(i);
             if (code === 32 || !font.isInFont(code)) {
                 w += font.wordSpacing;

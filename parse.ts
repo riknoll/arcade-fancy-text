@@ -49,7 +49,7 @@ namespace fancyText {
 
             for (const span of this.spans) {
                 const font = getFontForSpan(span.flags) || defaultFont;
-                this.width += getTextWidth(font, text.substr(span.offset, span.length));
+                this.width += getTextWidth(font, text, span.offset, span.offset + span.length);
                 this.height = Math.max(this.height, font.lineHeight)
             }
         }
@@ -316,7 +316,7 @@ namespace fancyText {
                     pushSpan(lastBreakLocation, charIndex, true, 2);
                     lastBreakLocation += 2;
                 }
-                else if (currentLine.width + getTextWidth(font, text.substr(lastBreakLocation, charIndex + 1)) > maxWidth) {
+                else if (currentLine.width + getTextWidth(font, text, lastBreakLocation, charIndex + 1) > maxWidth) {
                     if (lastWhitespaceLocation <= lastBreakLocation && currentLine.spans.length === 0) {
                         pushSpan(lastBreakLocation, charIndex, true, 1);
                     }

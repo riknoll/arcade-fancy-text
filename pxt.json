@@ -6,6 +6,7 @@
         "parse.ts",
         "draw.ts",
         "sprite.ts",
+        "api.ts",
         "main.ts"
     ],
     "supportedTargets": [

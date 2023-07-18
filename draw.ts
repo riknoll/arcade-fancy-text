@@ -19,7 +19,7 @@ namespace fancyText {
                 length -= span.length;
                 if (length <= 0) return;
 
-                currentLeft += getTextWidth(font, text.substr(span.offset, span.length));
+                currentLeft += getTextWidth(font, text, span.offset, span.offset + span.length);
             }
             top += line.height;
         }
