@@ -1,6 +1,6 @@
 {
-    "name": "hack-project",
-    "version": "0.0.0",
+    "name": "arcade-fancy-text",
+    "version": "0.0.1",
     "files": [
         "font.ts",
         "parse.ts",
