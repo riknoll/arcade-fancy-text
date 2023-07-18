@@ -16,13 +16,14 @@ namespace fancyText {
     }
 
     //% blockId=fancy_text_create
-    //% block="create text sprite $text||with max width $maxWidth color $color font $font"
+    //% block="text sprite $text||with max width $maxWidth color $color font $font"
     //% text.defl="abc"
     //% maxWidth.defl=100
     //% maxWidth.min=0
     //% color.shadow=colorindexpicker
     //% font.shadow=fancy_text__fontPicker
     //% blockSetVariable=myTextSprite
+    //% inlineInputMode=inline
     //% group=Create
     //% weight=100
     export function create(text: string, maxWidth?: number, color?: number, font?: BaseFont): TextSprite {
