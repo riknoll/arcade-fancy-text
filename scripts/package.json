@@ -1,0 +1,14 @@
+{
+  "name": "scripts",
+  "private": "true",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^20.4.5",
+    "canvas": "^2.11.2",
+    "typescript": "^5.1.6"
+  }
+}

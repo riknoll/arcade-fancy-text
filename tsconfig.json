@@ -2,8 +2,7 @@
     "compilerOptions": {
         "target": "ES5",
         "noImplicitAny": true,
-        "outDir": "built",
-        "rootDir": "."
+        "outDir": "built"
     },
     "include": [
         "**/*.ts"
