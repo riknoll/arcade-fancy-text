@@ -10,3 +10,4 @@ _site
 *.tgz
 .header.json
 .simstate.json
+scripts/dist
