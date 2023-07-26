@@ -1,25 +1,28 @@
-import { Font, deserializeFont, trimGlyph } from "../../font-editor/src/lib/font";
+import { Font, deserializeFont, hexEncodeFont, trimGlyph } from "../../font-editor/src/lib/font";
 import fs = require("fs");
 import path = require("path");
 import * as canvas from "canvas";
 import { Glyph, createGlyph, getPixel } from "../../font-editor/src/lib/glyph";
 
 const testText = `The Quick Brown Fox Jumped Over The Lazy Dog`;
+const testText2 = `Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz 0123456789 .!?"'(){}[]`;
 async function main() {
     const fontRoot = path.resolve("../fonts");
     const previewRoot = path.resolve("../previews");
     const markdownPath = path.resolve("../README.md");
+    const tsPath = path.resolve("../built-fonts.ts");
     const root = path.dirname(markdownPath);
 
     const fontFiles = fs.readdirSync(fontRoot);
     let markdownOut = "";
+    let namespaceOut = "";
 
     for (const file of fontFiles) {
         const p = path.join(fontRoot, file);
 
         const text = fs.readFileSync(p, { encoding: "utf-8" });
         const parsed = deserializeFont(text);
-        const c = renderFont(parsed, testText);
+        const c = renderFont(parsed, testText2);
         const scaled = scaleCanvas(c, 4);
 
         const outFile = path.join(previewRoot, file.split(".")[0] + ".png")
@@ -30,14 +33,21 @@ async function main() {
 
         const nameParts = file.split(".")[0].split("-");
         const name = nameParts.filter(p => p !== "font").join(" ");
+        const id = name.replace(/ /g, "_");
+
+        const encoded = hexEncodeFont(parsed);
 
         markdownOut += `### ${name}\n\n`;
         markdownOut += `* Character height: ${parsed.meta.defaultHeight}\n`;
         markdownOut += `* Line height: ${parsed.meta.defaultHeight + parsed.meta.ascenderHeight + parsed.meta.descenderHeight}\n\n`;
-        markdownOut += `![Preview of ${name} font](${path.relative(root, outFile)})\n\n`
+        markdownOut += `![Preview of ${name} font](${path.relative(root, outFile)})\n\n`;
+
+        namespaceOut += `    //% whenUsed\n`;
+        namespaceOut += `    //% fixedInstance\n`;
+        namespaceOut += `    //% block="${name}"\n`;
+        namespaceOut += `    //% blockIdentity=fancy_text__fontPicker\n`;
+        namespaceOut += `    export const ${id}: fancyText.BaseFont = new Font(hex\`${encoded}\`);\n\n`
     }
-
-
 
     const markdown = fs.readFileSync(markdownPath, { encoding: "utf-8" });
 
@@ -46,6 +56,12 @@ async function main() {
 
     const out = `${prologue}<!-- font-preview-start -->\n${markdownOut}\n<!-- font-preview-end -->${epilogue}`;
     fs.writeFileSync(markdownPath, out);
+    console.log("Wrote README.md");
+
+    let tsOut = `namespace fancyText {\n${namespaceOut}}\n`;
+    tsOut = `// DO NOT EDIT! Run scripts/built-fonts.ts to generate\n\n\n` + tsOut;
+    fs.writeFileSync(tsPath, tsOut)
+    console.log("Wrote built-fonts.ts");
 }
 
 function renderFont(font: Font, text: string) {
@@ -96,8 +112,10 @@ function renderFont(font: Font, text: string) {
 
     let bestLines = 1;
     let bestAspectRatio = 0;
+    let bestWidth = 0;
 
     for (let i = 1; i < 10; i++) {
+        let maxWidth = 0;
         const width = Math.ceil(lineHeight * i * targetAspectRatio);
 
         let x = font.meta.kernWidth;
@@ -114,6 +132,7 @@ function renderFont(font: Font, text: string) {
                 }
             }
             x += w;
+            maxWidth = Math.max(x, maxWidth)
 
             if (x + space > width) {
                 x = font.meta.kernWidth;
@@ -124,6 +143,8 @@ function renderFont(font: Font, text: string) {
             }
         }
 
+        if (x === font.meta.kernWidth) line--;
+
         if (line > i) {
             continue;
         }
@@ -133,13 +154,14 @@ function renderFont(font: Font, text: string) {
         if (Math.abs(aspectRatio - targetAspectRatio) < Math.abs(bestAspectRatio - targetAspectRatio)) {
             bestAspectRatio = aspectRatio;
             bestLines = line;
+            bestWidth = maxWidth;
         }
     }
 
     const padding = 2;
 
     const render = canvas.createCanvas(
-        Math.ceil(bestAspectRatio * lineHeight * bestLines) + padding * 2,
+        bestWidth + padding * 2,
         lineHeight * bestLines + padding * 2
     );
 
