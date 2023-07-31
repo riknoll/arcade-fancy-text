@@ -49,7 +49,7 @@ let myTextSprite = fancyText.create(
     "HELLO HOW ARE YOU TODAY?",
     100,
     3,
-    fancyText.serif8Font
+    fancyText.serif_small
     )
     myTextSprite.setVelocity(20, 20)
     myTextSprite.setBounceOnWall(true)

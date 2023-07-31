@@ -1,5 +1,5 @@
 namespace SpriteKind {
-    export const Text = SpriteKind.create();
+    export const FancyText = SpriteKind.create();
 }
 
 namespace fancyText {
@@ -14,7 +14,7 @@ namespace fancyText {
         protected defaultFont: BaseFont;
 
         constructor(public text: string) {
-            super(img`1`, SpriteKind.Text);
+            super(img`1`, SpriteKind.FancyText);
 
             this.color = 1;
             this.maxWidth = 0xffffffff;
@@ -53,99 +53,40 @@ namespace fancyText {
             return length;
         }
 
-        //% blockId=fancy_text_set_text
-        //% block="$this set text $text"
-        //% this.shadow=variables_get
-        //% this.defl=myTextSprite
-        //% text.defl="abc"
-        //% group=Create
-        //% weight=90
-        //% blockGap=8
         setText(text: string) {
             this.text = text;
             this.spans = getSpans(text);
             this.recalculateLines();
         }
 
-        //% blockId=fancy_text_get_text
-        //% block="$this text"
-        //% this.shadow=variables_get
-        //% this.defl=myTextSprite
-        //% group=Create
-        //% weight=85
         getText() {
             return this.text;
         }
 
-        //% blockId=fancy_text_set_max_width
-        //% block="$this set max width $maxWidth"
-        //% this.shadow=variables_get
-        //% this.defl=myTextSprite
-        //% maxWidth.defl="100"
-        //% group=Create
-        //% weight=80
         setMaxWidth(maxWidth: number) {
             this.maxWidth = maxWidth;
             this.recalculateLines();
         }
 
-        //% blockId=fancy_text_set_color
-        //% block="$this set color $color"
-        //% this.shadow=variables_get
-        //% this.defl=myTextSprite
-        //% color.shadow=colorindexpicker
-        //% group=Create
-        //% weight=70
-        //% blockGap=8
         setColor(color: number) {
             this.color = color;
         }
 
-        //% blockId=fancy_text_get_color
-        //% block="$this color"
-        //% this.shadow=variables_get
-        //% this.defl=myTextSprite
-        //% group=Create
-        //% weight=65
-        //% blockGap=8
         getColor(): number {
             return this.color;
         }
 
-        //% blockId=fancy_text_set_font
-        //% block="$this set font $font"
-        //% this.shadow=variables_get
-        //% this.defl=myTextSprite
-        //% font.shadow=fancy_text__fontPicker
-        //% group=Create
-        //% weight=60
-        //% blockGap=8
         setFont(font: BaseFont) {
             this.defaultFont = font;
             this.recalculateLines();
         }
 
-        //% blockId=fancy_text_animate_at_speed
-        //% block="$this animate $charactersPerSecond"
-        //% this.shadow=variables_get
-        //% this.defl=myTextSprite
-        //% charactersPerSecond.shadow=fancy_text__speedPicker
-        //% group=Animate
-        //% weight=90
-        //% blockGap=8
         animateAtSpeed(charactersPerSecond: number) {
             this.animationSpeed = charactersPerSecond;
             this.animationOffset = 0;
             this.animationTimer = this.getTimerAtOffset(0);
         }
 
-        //% blockId=fancy_text_animate_for_time
-        //% block="$this animate for $timeMillis ms"
-        //% this.shadow=variables_get
-        //% this.defl=myTextSprite
-        //% timeMillis.shadow=timePicker
-        //% group=Animate
-        //% weight=80
         animateForTime(timeMillis: number) {
             let length = 0;
             for (const line of this.lines) {
@@ -170,12 +111,6 @@ namespace fancyText {
             this.animateAtSpeed(length * 1000 / timeMillis)
         }
 
-        //% blockId=fancy_text_remaining_animation_time
-        //% block="$this animation millis left"
-        //% this.shadow=variables_get
-        //% this.defl=myTextSprite
-        //% group=Animate
-        //% weight=70
         remainingAnimationTime(): number {
             if (!this.animationSpeed) return 0;
 
