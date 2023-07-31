@@ -46,20 +46,60 @@
 // console.log(outLines.join("\n"))
 
 let myTextSprite = fancyText.create(
-    "HELLO HOW ARE YOU TODAY?",
-    100,
+    "<wavy>Hello</wavy> How Are You Today",
+    140,
     3,
-    fancyText.serif_small
-    )
-    myTextSprite.setVelocity(20, 20)
-    myTextSprite.setBounceOnWall(true)
+    fancyText.gothic_large
+)
+myTextSprite.left = 5
+myTextSprite.top = 5
+    // myTextSprite.setVelocity(20, 20)
+    // myTextSprite.setBounceOnWall(true)
 // myTextSprite.setPosition(80, 60)
 // controller.moveSprite(myTextSprite, 30, 30)
 // scene.cameraFollowSprite(myTextSprite)
 
-// game.onShade(() => {
-//     // screen.printCenter(`(${myTextSprite.width}, ${myTextSprite.height}) (${myTextSprite.left | 0}, ${myTextSprite.top | 0})`, 60, 1)
+const testFrame = img`
+...cc......................cc....
+..c55c..bbbb...bbbbb......c55c...
+.cb55bcbdddbbbbbdddbbbbbbcb55bc..
+b555555bbdddb111bdddb11db555555b.
+bb5555bbdbdb11111bdb1111bb5555bb.
+cb5555bcddd11111ddd11111cb5555bc.
+.c5bb5c1111d111d111d111ddc5bb5c..
+.cbbbbc111111111111111111cbbbbc..
+..b11111111111111111111111d111bb.
+..b111111111111111111111111d1bdb.
+..bb11111111111111111111111dbddb.
+.bbdb1d11111111111111111111ddddb.
+.bdddd11111111111111111111d1bdbb.
+.bddbd11111111111111111111111bb..
+.bdb1d111111111111111111111111b..
+.bb111d11111111111111111111111b..
+..b11111111111111111111111d111bb.
+..b111111111111111111111111d1bdb.
+..bb11111111111111111111111dbddb.
+.bbdb1d11111111111111111111ddddb.
+.bdddd11111111111111111111d1bdbb.
+.bddbd11111111111111111111111bb..
+.bdbb1111111111111111111111111b..
+.bbbd1111111111111111111111111b..
+..bcc111111111111111111111dccdb..
+..c55c111d111d111d111d1111c55cb..
+.cb55bcdd11111ddd11111dddcb55bc..
+b555555b11111bdb11111bdbb555555b.
+bb5555bbb111bdddb111bdddbb5555bb.
+cb5555bcdbbbbbdddbbbbbddcb5555bc.
+.c5bb5c.bb...bbbbb...bbbbc5bb5c..
+.cbbbbc..................cbbbbc..
+.................................
+`
 
-//     screen.print("HELLO", 20, -7, 1, image.font12)
-//     screen.print("HELLO", 90, -8, 1, image.font12)
-// })
+myTextSprite.setFrame(testFrame)
+// myTextSprite.setFrame(img`123
+// 456
+// 789`)
+
+myTextSprite.animateForTime(2000)
+
+game.stats = true

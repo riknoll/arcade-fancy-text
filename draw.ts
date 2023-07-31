@@ -3,6 +3,7 @@ const rainbow = img`245768ca`
 namespace fancyText {
     export function drawFontText(left: number, top: number, text: string, lines: Line[], defaultColor: number, defaultFont: fancyText.BaseFont, length: number) {
         let currentLeft = left;
+        let printedLines = 1;
         for (const line of lines) {
             currentLeft = left;
             for (const span of line.spans) {
@@ -17,12 +18,14 @@ namespace fancyText {
                 }
 
                 length -= span.length;
-                if (length <= 0) return;
+                if (length <= 0) return printedLines;
 
                 currentLeft += getTextWidth(font, text, span.offset, span.offset + span.length);
             }
             top += line.height;
+            printedLines++;
         }
+        return lines.length;
     }
 
 
@@ -165,4 +168,204 @@ namespace fancyText {
         }
     }
 
+    export function drawFrame(target: Image, frame: Image, left: number, top: number, width: number, height: number) {
+        const frameUnit = Math.idiv(frame.width, 3);
+
+        for (let x = frameUnit; x < width - (frameUnit << 1); x += frameUnit) {
+            // top side
+            target.blit(
+                left + x,
+                top,
+                frameUnit,
+                frameUnit,
+                frame,
+                frameUnit,
+                0,
+                frameUnit,
+                frameUnit,
+                true,
+                false
+            );
+
+            // bottom side
+            target.blit(
+                left + x,
+                top + height - frameUnit,
+                frameUnit,
+                frameUnit,
+                frame,
+                frameUnit,
+                frameUnit << 1,
+                frameUnit,
+                frameUnit,
+                true,
+                false
+            );
+        }
+
+        const modW = (width % frameUnit) || frameUnit
+
+        // top side end
+        target.blit(
+            left + width - frameUnit - modW,
+            top,
+            modW,
+            frameUnit,
+            frame,
+            frameUnit,
+            0,
+            modW,
+            frameUnit,
+            true,
+            false
+        );
+
+        // bottom side end
+        target.blit(
+            left + width - frameUnit - modW,
+            top + height - frameUnit,
+            modW,
+            frameUnit,
+            frame,
+            frameUnit,
+            frameUnit << 1,
+            modW,
+            frameUnit,
+            true,
+            false
+        );
+
+        for (let y = frameUnit; y < height - (frameUnit << 1); y += frameUnit) {
+            // left side
+            target.blit(
+                left,
+                top + y,
+                frameUnit,
+                frameUnit,
+                frame,
+                0,
+                frameUnit,
+                frameUnit,
+                frameUnit,
+                true,
+                false
+            );
+
+            // right side
+            target.blit(
+                left + width - frameUnit,
+                top + y,
+                frameUnit,
+                frameUnit,
+                frame,
+                frameUnit << 1,
+                frameUnit,
+                frameUnit,
+                frameUnit,
+                true,
+                false
+            );
+        }
+
+        const modH = (height % frameUnit) || frameUnit;
+
+        // left side end
+        target.blit(
+            left,
+            top + height - frameUnit - modH,
+            frameUnit,
+            modH,
+            frame,
+            0,
+            frameUnit,
+            frameUnit,
+            modH,
+            true,
+            false
+        );
+
+        // right side end
+        target.blit(
+            left + width - frameUnit,
+            top + height - frameUnit - modH,
+            frameUnit,
+            modH,
+            frame,
+            frameUnit << 1,
+            frameUnit,
+            frameUnit,
+            modH,
+            true,
+            false
+        );
+
+        // top left corner
+        target.blit(
+            left,
+            top,
+            frameUnit,
+            frameUnit,
+            frame,
+            0,
+            0,
+            frameUnit,
+            frameUnit,
+            true,
+            false
+        );
+
+        // top right corner
+        target.blit(
+            left + width - frameUnit,
+            top,
+            frameUnit,
+            frameUnit,
+            frame,
+            frameUnit << 1,
+            0,
+            frameUnit,
+            frameUnit,
+            true,
+            false
+        );
+
+        // bottom left corner
+        target.blit(
+            left,
+            top + height - frameUnit,
+            frameUnit,
+            frameUnit,
+            frame,
+            0,
+            frameUnit << 1,
+            frameUnit,
+            frameUnit,
+            true,
+            false
+        );
+
+        // bottom right corner
+        target.blit(
+            left + width - frameUnit,
+            top + height - frameUnit,
+            frameUnit,
+            frameUnit,
+            frame,
+            frameUnit << 1,
+            frameUnit << 1,
+            frameUnit,
+            frameUnit,
+            true,
+            false
+        );
+
+        // middle
+        target.fillRect(
+            left + frameUnit,
+            top + frameUnit,
+            width - (frameUnit << 1),
+            height - (frameUnit << 1),
+            frame.getPixel(frameUnit, frameUnit)
+        );
+    }
 }

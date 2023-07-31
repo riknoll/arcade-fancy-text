@@ -169,6 +169,27 @@ namespace fancyText {
         (sprite as TextSprite).setFont(font);
     }
 
+
+    /**
+     * Sets a frame to be drawn around this TextSprite
+     *
+     * @param sprite The TextSprite to set the frame on
+     * @param font The frame to set on the TextSprite
+     */
+    //% blockId=fancy_text_set_frame
+    //% block="$sprite set frame $frame"
+    //% sprite.shadow=variables_get
+    //% sprite.defl=myTextSprite
+    //% frame.shadow=dialog_image_picker
+    //% group=Create
+    //% weight=50
+    //% blockGap=8
+    //% help=github:arcade-fancy-text/docs/set-frame
+    export function setFrame(sprite: Sprite, frame: Image) {
+        assertTextSprite(sprite);
+        (sprite as TextSprite).setFrame(frame);
+    }
+
     /**
      * Animates a TextSprite so that it prints itself character by character
      * at a given speed. The speed is in characters per second.
