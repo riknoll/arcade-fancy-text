@@ -81,7 +81,7 @@ However, some tags cannot be combined (e.g. multiple colors).
 
 #### Animation speed modifiers
 
-These tags can be used to control how quickly text is printed when animating. They only have an effect when characters are being printed using the [animate at speed]() or [animate for time]() blocks.
+These tags can be used to control how quickly text is printed when animating. They only have an effect when characters are being printed using the [animate at speed](./animate-at-speed) or [animate for time](./animate-for time) blocks.
 
 | Tag                           | Effect 
 | ----------------------------- | ---------------------------------------

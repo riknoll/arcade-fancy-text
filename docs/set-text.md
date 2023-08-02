@@ -6,7 +6,7 @@ Sets the text of a TextSprite.
 fancyText.setText(fancyText.create("Hello"), "World!")
 ```
 
-You can modify how text is drawn to the screen by using [tags]().
+You can modify how text is drawn to the screen by using [tags](./create).
 
 ## Parameters
 

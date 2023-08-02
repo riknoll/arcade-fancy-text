@@ -6,7 +6,7 @@ Sets the color used when printing the text of a TextSprite.
 fancyText.setColor(fancyText.create("Hello, World!"), 2)
 ```
 
-You can modify the color of parts of the text by using [tags]().
+You can modify the color of parts of the text by using [tags](./create).
 
 ## Parameters
 

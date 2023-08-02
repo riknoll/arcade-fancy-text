@@ -5,3 +5,7 @@ There are multiple fonts included in the arcade-fancy-text extension for you to 
 ```sig
 fancyText.__fontPicker(fancyText.defaultArcade)
 ```
+
+```package
+arcade-fancy-text=github:riknoll/arcade-fancy-text
+```

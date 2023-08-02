@@ -6,7 +6,7 @@ Sets the [font]() used when printing a TextSprite to the screen.
 fancyText.setFont(fancyText.create("Hello, World!"), fancyText.defaultArcade)
 ```
 
-You can modify the font of parts of the text by using [tags]().
+You can modify the font of parts of the text by using [tags](./create).
 
 ## Parameters
 
