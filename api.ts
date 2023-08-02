@@ -31,9 +31,13 @@ namespace fancyText {
         //% blockIdentity=fancy_text__textFlagPicker
         ChangeHeightWhileAnimating = 1 << 0,
 
+        //% block="change width while animating"
+        //% blockIdentity=fancy_text__textFlagPicker
+        ChangeWidthWhileAnimating = 1 << 1,
+
         //% block="always occupy max width"
         //% blockIdentity=fancy_text__textFlagPicker
-        AlwaysOccupyMaxWidth = 1 << 1
+        AlwaysOccupyMaxWidth = 1 << 2
     }
 
     export enum AnimationPlayMode {
@@ -65,7 +69,7 @@ namespace fancyText {
     //% weight=100
     //% help=github:arcade-fancy-text/docs/create
     export function create(text: string, maxWidth?: number, color?: number, font?: BaseFont): TextSprite {
-        const sprite = new TextSprite(text);
+        const sprite = new TextSprite(text, SpriteKind.FancyText);
 
         if (maxWidth) sprite.setMaxWidth(maxWidth);
         if (color) sprite.setColor(color);

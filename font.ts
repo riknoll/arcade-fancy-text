@@ -235,7 +235,7 @@ namespace fancyText {
     }
 
     export function getTextWidth(font: fancyText.BaseFont, text: string, start = 0, end?: number) {
-        if (!end) end = text.length;
+        if (end == undefined) end = text.length;
 
         let w = 0;
         for (let i = start; i < end; i++) {

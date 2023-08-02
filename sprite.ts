@@ -15,13 +15,12 @@ namespace fancyText {
         protected animationSpeed: number;
         protected animationOffset: number;
         protected animationTimer: number;
-        protected animationLines: number;
         protected animationId: number;
 
         protected sound: music.Playable;
 
-        constructor(public text: string) {
-            super(img`1`, SpriteKind.FancyText);
+        constructor(public text: string, kind: number) {
+            super(img`1`, kind);
 
             this.color = 1;
             this.maxWidth = 0;
@@ -33,25 +32,13 @@ namespace fancyText {
         draw(drawLeft: number, drawTop: number) {
             const font = this.defaultFont || getDefaultFont(this.text);
 
-            let lines = 0;
             if (this.frame) {
                 drawFrame(screen, this.frame, drawLeft, drawTop, this.width, this.height);
                 const frameUnit = Math.idiv(this.frame.width, 3);
-                lines = drawFontText(drawLeft + frameUnit, drawTop + frameUnit, this.text, this.lines, this.color, font, this.animationSpeed ? this.animationOffset : this.text.length);
+                drawFontText(drawLeft + frameUnit, drawTop + frameUnit, this.text, this.lines, this.color, font, this.animationSpeed ? this.animationOffset : this.text.length);
             }
             else {
-                lines = drawFontText(drawLeft, drawTop, this.text, this.lines, this.color, font, this.animationSpeed ? this.animationOffset : this.text.length);
-            }
-
-            if (this.textFlags & Flag.ChangeHeightWhileAnimating) {
-                if (lines !== this.animationLines) {
-                    this.animationLines = lines;
-                    this.recalculateDimensions();
-
-                    if (this.frame) {
-                        this.draw(drawLeft, drawTop)
-                    }
-                }
+                drawFontText(drawLeft, drawTop, this.text, this.lines, this.color, font, this.animationSpeed ? this.animationOffset : this.text.length);
             }
         }
 
@@ -68,8 +55,13 @@ namespace fancyText {
 
                 if (this.animationOffset >= this.length()) this.animationSpeed = undefined;
 
-                if (didPrintCharacter && this.sound) {
-                    this.sound.play(music.PlaybackMode.InBackground);
+                if (didPrintCharacter) {
+                    if (this.sound) {
+                        this.sound.play(music.PlaybackMode.InBackground);
+                    }
+                    if (this.textFlags & (Flag.ChangeHeightWhileAnimating | Flag.ChangeWidthWhileAnimating)) {
+                        this.recalculateDimensions();
+                    }
                 }
             }
         }
@@ -118,7 +110,6 @@ namespace fancyText {
             this.animationSpeed = Math.max(charactersPerSecond, 0.001);
             this.animationOffset = 0;
             this.animationTimer = this.getTimerAtOffset(0);
-            this.animationLines = 1;
             this.animationId++;
             this.recalculateDimensions();
         }
@@ -155,7 +146,10 @@ namespace fancyText {
             for (const line of this.lines) {
                 for (const span of line.spans) {
                     if (i > this.animationOffset) {
-                        time += this.getTimerAtOffset(i);
+                        time += this.getTimerAtOffset(i) * span.length;
+                    }
+                    else if (i + span.length > this.animationOffset) {
+                        time += this.getTimerAtOffset(i) * (span.length - (this.animationOffset - i))
                     }
                     i += span.length
                 }
@@ -194,7 +188,7 @@ namespace fancyText {
                 }
             }
             this.frame = frame;
-            this.recalculateDimensions();
+            this.recalculateLines();
         }
 
         setTextFlag(flag: Flag, on: boolean) {
@@ -227,17 +221,42 @@ namespace fancyText {
             let width = 0;
             let height = 0;
 
-            let maxLine = this.lines.length;
+            if (this.animationSpeed && (this.textFlags & (Flag.ChangeHeightWhileAnimating | Flag.ChangeWidthWhileAnimating))) {
+                let offset = 0;
+                for (const line of this.lines) {
+                    let lineWidth = 0;
+                    for (const span of line.spans) {
+                        if (this.textFlags & Flag.ChangeWidthWhileAnimating) {
+                            const font = getFontForSpan(span.flags) || this.defaultFont;
 
-            if (this.animationLines && this.textFlags & Flag.ChangeHeightWhileAnimating) {
-                maxLine = this.animationLines;
+                            if (offset + span.length > this.animationOffset) {
+                                lineWidth += getTextWidth(font, this.text, span.offset, span.offset + (this.animationOffset - offset))
+                                offset += span.length;
+                                break;
+                            }
+                            else {
+                                lineWidth += getTextWidth(font, this.text, span.offset, span.offset + span.length);
+                                offset += span.length;
+                            }
+                        }
+                        else {
+                            offset += span.length;
+                            lineWidth = line.width;
+                        }
+                    }
+
+                    width = Math.max(lineWidth, width);
+                    height += line.height;
+
+                    if (offset > this.animationOffset) break;
+                }
+
             }
+            else {
+                for (let i = 0; i < this.lines.length; i++) {
+                    const line = this.lines[i];
 
-            for (let i = 0; i < this.lines.length; i++) {
-                const line = this.lines[i];
-
-                width = Math.max(line.width, width);
-                if (i < maxLine) {
+                    width = Math.max(line.width, width);
                     height += line.height;
                 }
             }
@@ -245,10 +264,12 @@ namespace fancyText {
             if (this.frame) {
                 const frameUnit = Math.idiv(this.frame.width, 3);
                 width += frameUnit << 1;
-                height += frameUnit << 1
+                height += frameUnit << 1;
+                width = Math.max(width, this.frame.width);
+                height = Math.max(height, this.frame.height);
             }
 
-            if (this.flags & Flag.AlwaysOccupyMaxWidth && this.maxWidth) {
+            if (this.textFlags & Flag.AlwaysOccupyMaxWidth && this.maxWidth) {
                 width = this.maxWidth;
             }
 

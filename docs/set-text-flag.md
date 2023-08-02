@@ -17,6 +17,7 @@ fancyText.setTextFlag(fancyText.create("Hello"), fancyText.Flag.ChangeHeightWhil
 | Flag                          | Effect 
 | ----------------------------- | ---------------------------------------
 | change height while animating | When enabled, TextSprites will change height while printing out characters every time a line breaks instead of always using the maximum height. Defaults to ON
+| change width while animation  | When enabled, TextSprites will change width while printint out characters every time a new character is printed. This is overridden by "always occupy max width". Defaults to OFF
 | always occupy max width       | When enabled, TextSprites will always occupy the max width (if one is set) instead of the minimum width that fits the text. Defaults to ON
 
 ## Example #example
