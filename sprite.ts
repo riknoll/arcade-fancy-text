@@ -3,6 +3,56 @@ namespace SpriteKind {
 }
 
 namespace fancyText {
+    class FancyTextState {
+        sprites: TextSprite[]
+
+        constructor() {
+            this.sprites = [];
+
+            const eventContext = game.currentScene().eventContext;
+            eventContext.registerFrameHandler(scene.UPDATE_PRIORITY - 1, () => {
+                let shouldPrune = false;
+                const dt = eventContext.deltaTimeMillis
+                for (const sprite of this.sprites) {
+                    sprite.preUpdate(dt);
+
+                    if (sprite.flags & sprites.Flag.Destroyed) {
+                        shouldPrune = true;
+                    }
+                }
+
+                if (shouldPrune) {
+                    this.sprites = this.sprites.filter(s => !(s.flags & sprites.Flag.Destroyed));
+                }
+            });
+        }
+    }
+
+    let stateStack: FancyTextState[];
+
+    function init() {
+        if (stateStack) return;
+        stateStack = [new FancyTextState()];
+
+        game.addScenePushHandler(() => {
+            stateStack.push(new FancyTextState());
+        });
+
+        game.addScenePopHandler(() => {
+            stateStack.pop();
+
+            if (stateStack.length === 0) {
+                stateStack.push(new FancyTextState());
+            }
+        });
+    }
+
+    function state() {
+        init();
+        return stateStack[stateStack.length - 1];
+    }
+
+
     export class TextSprite extends sprites.ExtendableSprite {
         protected spans: Span[];
         protected lines: Line[];
@@ -27,6 +77,7 @@ namespace fancyText {
             this.textFlags = Flag.ChangeHeightWhileAnimating | Flag.AlwaysOccupyMaxWidth;
             this.setText(text);
             this.animationId = 0;
+            state().sprites.push(this);
         }
 
         draw(drawLeft: number, drawTop: number) {
@@ -42,7 +93,7 @@ namespace fancyText {
             }
         }
 
-        update(deltaTimeMillis: number) {
+        preUpdate(deltaTimeMillis: number) {
             if (this.animationSpeed) {
                 this.animationTimer -= deltaTimeMillis;
 
