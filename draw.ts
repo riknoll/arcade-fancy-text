@@ -360,12 +360,15 @@ namespace fancyText {
         );
 
         // middle
-        target.fillRect(
-            left + frameUnit,
-            top + frameUnit,
-            width - (frameUnit << 1),
-            height - (frameUnit << 1),
-            frame.getPixel(frameUnit, frameUnit)
-        );
+        const bodyColor = frame.getPixel(frameUnit, frameUnit);
+        if (bodyColor) {
+            target.fillRect(
+                left + frameUnit,
+                top + frameUnit,
+                width - (frameUnit << 1),
+                height - (frameUnit << 1),
+                bodyColor
+            );
+        }
     }
 }
