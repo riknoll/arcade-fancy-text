@@ -278,7 +278,7 @@ namespace fancyText {
                     let lineWidth = 0;
                     for (const span of line.spans) {
                         if (this.textFlags & Flag.ChangeWidthWhileAnimating) {
-                            const font = getFontForSpan(span.flags) || this.defaultFont;
+                            const font = getFontForSpan(span.flags) || this.defaultFont || getDefaultFont(this.text);
 
                             if (offset + span.length > this.animationOffset) {
                                 lineWidth += getTextWidth(font, this.text, span.offset, span.offset + (this.animationOffset - offset))

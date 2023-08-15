@@ -45,7 +45,7 @@ async function main() {
         namespaceOut += `    //% whenUsed\n`;
         namespaceOut += `    //% fixedInstance\n`;
         namespaceOut += `    //% block="${name}"\n`;
-        namespaceOut += `    //% blockIdentity=fancy_text__fontPicker\n`;
+        namespaceOut += `    //% blockIdentity="fancyText.__fontPicker"\n`;
         namespaceOut += `    export const ${id}: fancyText.BaseFont = new Font(hex\`${encoded}\`);\n\n`
     }
 

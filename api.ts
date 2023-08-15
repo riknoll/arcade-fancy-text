@@ -2,41 +2,41 @@
 //% color="#bf42f5"
 //$ icon="\uf031"
 namespace fancyText {
-    //% blockIdentity=fancy_text__speedPicker
+    //% blockIdentity="fancyText.__speedPicker"
     export enum TextSpeed {
         //% block="very slow"
-        //% blockIdentity=fancy_text__speedPicker
+        //% blockIdentity="fancyText.__speedPicker"
         VerySlow = 4,
 
         //% block="slow"
-        //% blockIdentity=fancy_text__speedPicker
+        //% blockIdentity="fancyText.__speedPicker"
         Slow = 8,
 
         //% block="normal"
-        //% blockIdentity=fancy_text__speedPicker
+        //% blockIdentity="fancyText.__speedPicker"
         Normal = 12,
 
         //% block="fast"
-        //% blockIdentity=fancy_text__speedPicker
+        //% blockIdentity="fancyText.__speedPicker"
         Fast = 16,
 
         //% block="very fast"
-        //% blockIdentity=fancy_text__speedPicker
+        //% blockIdentity="fancyText.__speedPicker"
         VeryFast = 20
     }
 
-    //% blockIdentity=fancy_text__textFlagPicker
+    //% blockIdentity="fancyText.__textFlagPicker"
     export enum Flag {
         //% block="change height while animating"
-        //% blockIdentity=fancy_text__textFlagPicker
+        //% blockIdentity="fancyText.__textFlagPicker"
         ChangeHeightWhileAnimating = 1 << 0,
 
         //% block="change width while animating"
-        //% blockIdentity=fancy_text__textFlagPicker
+        //% blockIdentity="fancyText.__textFlagPicker"
         ChangeWidthWhileAnimating = 1 << 1,
 
         //% block="always occupy max width"
-        //% blockIdentity=fancy_text__textFlagPicker
+        //% blockIdentity="fancyText.__textFlagPicker"
         AlwaysOccupyMaxWidth = 1 << 2
     }
 
@@ -393,19 +393,19 @@ namespace fancyText {
 
     //% whenUsed
     //% block="default arcade"
-    //% blockIdentity=fancy_text__fontPicker
+    //% blockIdentity="fancyText.__fontPicker"
     //% fixedInstance
     export const defaultArcade: fancyText.BaseFont = new LegacyFont(image.font8);
 
     //% whenUsed
     //% block="unicode arcade"
-    //% blockIdentity=fancy_text__fontPicker
+    //% blockIdentity="fancyText.__fontPicker"
     //% fixedInstance
     export const unicodeArcade: fancyText.BaseFont = new LegacyFont(image.font12);
 
     //% whenUsed
     //% block="small arcade"
-    //% blockIdentity=fancy_text__fontPicker
+    //% blockIdentity="fancyText.__fontPicker"
     //% fixedInstance
     export const smallArcade: fancyText.BaseFont = new LegacyFont(image.font5);
 
