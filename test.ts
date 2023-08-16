@@ -1,5 +1,5 @@
 
-
+const lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
 
 
@@ -104,104 +104,127 @@
 // pause(myTextSprite.remainingAnimationTime());
 // myTextSprite.setColor(4)
 
-// controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-//     fancyText.cancelAnimation(myTextSprite)
-// })
-// let myTextSprite: fancyText.TextSprite = null
-// myTextSprite = fancyText.create("This is some test text")
-// fancyText.setFont(myTextSprite, fancyText.outline_medium)
-// fancyText.setFrame(myTextSprite, img`
-//     ..bbbbbbbbbbbbbbbbbbbb..
-//     .b11bb11bb11bb11bb11bbb.
-//     bbb11bb11bb11bb11bb11b1b
-//     bb1bbbbbbbbbbbbbbbbbb11b
-//     b11bb11111111111111bb1bb
-//     b1bb1111111111111111bbbb
-//     bbbb1111111111111111bb1b
-//     bb1b1111111111111111b11b
-//     b11b1111111111111111b1bb
-//     b1bb1111111111111111bbbb
-//     bbbb1111111111111111bb1b
-//     bb1b1111111111111111b11b
-//     b11b1111111111111111b1bb
-//     b1bb1111111111111111bbbb
-//     bbbb1111111111111111bb1b
-//     bb1b1111111111111111b11b
-//     b11b1111111111111111b1bb
-//     b1bb1111111111111111bbbb
-//     bbbb1111111111111111bb1b
-//     bb1bb11111111111111bb11b
-//     b11bbbbbbbbbbbbbbbbbb1bb
-//     b1b11bb11bb11bb11bb11bbb
-//     .bbb11bb11bb11bb11bb11b.
-//     ..bbbbbbbbbbbbbbbbbbbb..
-//     `)
-// fancyText.setMaxWidth(myTextSprite, 160)
-// fancyText.setAnimationSound(myTextSprite, music.createSoundEffect(WaveShape.Square, 519, 519, 255, 0, 100, SoundExpressionEffect.Warble, InterpolationCurve.Linear))
-// fancyText.animateAtSpeed(myTextSprite, 10, fancyText.AnimationPlayMode.InBackground)
-// fancyText.setColor(myTextSprite, 15)
-// game.onUpdate(function () {
-//     myTextSprite.bottom = 120
-//     myTextSprite.left = 0
-// })
+let myTextSprite: fancyText.TextSprite = null
+myTextSprite = fancyText.create(lorem)
+myTextSprite.setTextFlag(fancyText.Flag.ChangeHeightWhileAnimating, false)
+myTextSprite.setTextFlag(fancyText.Flag.AlwaysOccupyMaxWidth, true)
+myTextSprite.setTextFlag(fancyText.Flag.ChangeWidthWhileAnimating, false)
+
+myTextSprite.setMaxLines(3)
+
+fancyText.setFont(myTextSprite, fancyText.italic_small)
+fancyText.setFrame(myTextSprite, img`
+    ..bbbbbbbbbbbbbbbbbbbb..
+    .b11bb11bb11bb11bb11bbb.
+    bbb11bb11bb11bb11bb11b1b
+    bb1bbbbbbbbbbbbbbbbbb11b
+    b11bb11111111111111bb1bb
+    b1bb1111111111111111bbbb
+    bbbb1111111111111111bb1b
+    bb1b1111111111111111b11b
+    b11b1111111111111111b1bb
+    b1bb1111111111111111bbbb
+    bbbb1111111111111111bb1b
+    bb1b1111111111111111b11b
+    b11b1111111111111111b1bb
+    b1bb1111111111111111bbbb
+    bbbb1111111111111111bb1b
+    bb1b1111111111111111b11b
+    b11b1111111111111111b1bb
+    b1bb1111111111111111bbbb
+    bbbb1111111111111111bb1b
+    bb1bb11111111111111bb11b
+    b11bbbbbbbbbbbbbbbbbb1bb
+    b1b11bb11bb11bb11bb11bbb
+    .bbb11bb11bb11bb11bb11b.
+    ..bbbbbbbbbbbbbbbbbbbb..
+    `)
+fancyText.setMaxWidth(myTextSprite, 160)
+fancyText.setAnimationSound(myTextSprite, music.createSoundEffect(WaveShape.Square, 519, 519, 100, 0, 100, SoundExpressionEffect.Warble, InterpolationCurve.Linear))
+
+control.runInBackground(() => {
+    while (true) {
+        fancyText.animateAtSpeed(myTextSprite, 30, fancyText.AnimationPlayMode.InBackground)
+        controller.A.pauseUntil(ControllerButtonEvent.Pressed)
+
+        if (myTextSprite.remainingAnimationTime() > 0) {
+            myTextSprite.cancelAnimation();
+            controller.A.pauseUntil(ControllerButtonEvent.Pressed)
+        }
+
+        if (myTextSprite.hasNextPage()) {
+            myTextSprite.nextPage()
+        }
+        else {
+            break;
+        }
+    }
+})
+
+
+fancyText.setColor(myTextSprite, 15)
+game.onUpdate(function () {
+    myTextSprite.bottom = 120
+    myTextSprite.left = 0
+})
 
 game.stats = true
 
 
-function Dialog (Label: string, Text: string) {
-    // let DIALOG_LABEL = fancyText.create(".", 140, 1)
-    let DIALOG_TEXT = fancyText.create(".", 132, 15)
-    // DIALOG_LABEL.setKind(SpriteKind.Player)
-    // DIALOG_TEXT.setKind(SpriteKind.Player)
-    // fancyText.setFrame(DIALOG_LABEL, img`
-    //     . 6 6 6 6 6 6 6 6 6 6 6 . . .
-    //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
-    //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
-    //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
-    //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
-    //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
-    //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
-    //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
-    //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
-    //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
-    //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
-    //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
-    //     . 6 6 6 6 6 6 6 6 6 6 6 . . .
-    //     . . . . . . . . . . . . . . .
-    //     . . . . . . . . . . . . . . .
-    //     `)
-    // fancyText.setFrame(DIALOG_TEXT, img`
-    //     . 1 1 1 1 1 1 1 1 1 1 1 . . .
-    //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
-    //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
-    //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
-    //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
-    //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
-    //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
-    //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
-    //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
-    //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
-    //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
-    //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
-    //     . 1 1 1 1 1 1 1 1 1 1 1 . . .
-    //     . . . . . . . . . . . . . . .
-    //     . . . . . . . . . . . . . . .
-    //     `)
-    // fancyText.setTextFlag(DIALOG_LABEL, fancyText.Flag.ChangeHeightWhileAnimating, true)
-    // fancyText.setTextFlag(DIALOG_LABEL, fancyText.Flag.ChangeWidthWhileAnimating, true)
-    // fancyText.setTextFlag(DIALOG_TEXT, fancyText.Flag.ChangeHeightWhileAnimating, true)
-    fancyText.setTextFlag(DIALOG_TEXT, fancyText.Flag.ChangeWidthWhileAnimating, true)
-    // fancyText.animateAtSpeed(DIALOG_TEXT, fancyText.TextSpeed.Fast, fancyText.AnimationPlayMode.InBackground)
-    // DIALOG_LABEL.setPosition(40, 52)
-    // DIALOG_TEXT.setPosition(45, 68)
-    // DIALOG_LABEL.setFlag(SpriteFlag.RelativeToCamera, true)
-    // DIALOG_TEXT.setFlag(SpriteFlag.RelativeToCamera, true)
-    // fancyText.setText(DIALOG_LABEL, Label)
-    fancyText.setText(DIALOG_TEXT, Text)
-    // fancyText.animateForTime(DIALOG_LABEL, 1000, fancyText.AnimationPlayMode.UntilDone)
-    fancyText.animateAtSpeed(DIALOG_TEXT, fancyText.TextSpeed.VeryFast, fancyText.AnimationPlayMode.UntilDone)
-}
+// function Dialog (Label: string, Text: string) {
+//     // let DIALOG_LABEL = fancyText.create(".", 140, 1)
+//     let DIALOG_TEXT = fancyText.create(".", 132, 15)
+//     // DIALOG_LABEL.setKind(SpriteKind.Player)
+//     // DIALOG_TEXT.setKind(SpriteKind.Player)
+//     // fancyText.setFrame(DIALOG_LABEL, img`
+//     //     . 6 6 6 6 6 6 6 6 6 6 6 . . .
+//     //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
+//     //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
+//     //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
+//     //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
+//     //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
+//     //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
+//     //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
+//     //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
+//     //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
+//     //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
+//     //     6 6 6 6 6 6 6 6 6 6 6 6 6 . .
+//     //     . 6 6 6 6 6 6 6 6 6 6 6 . . .
+//     //     . . . . . . . . . . . . . . .
+//     //     . . . . . . . . . . . . . . .
+//     //     `)
+//     // fancyText.setFrame(DIALOG_TEXT, img`
+//     //     . 1 1 1 1 1 1 1 1 1 1 1 . . .
+//     //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
+//     //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
+//     //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
+//     //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
+//     //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
+//     //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
+//     //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
+//     //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
+//     //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
+//     //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
+//     //     1 1 1 1 1 1 1 1 1 1 1 1 1 . .
+//     //     . 1 1 1 1 1 1 1 1 1 1 1 . . .
+//     //     . . . . . . . . . . . . . . .
+//     //     . . . . . . . . . . . . . . .
+//     //     `)
+//     // fancyText.setTextFlag(DIALOG_LABEL, fancyText.Flag.ChangeHeightWhileAnimating, true)
+//     // fancyText.setTextFlag(DIALOG_LABEL, fancyText.Flag.ChangeWidthWhileAnimating, true)
+//     // fancyText.setTextFlag(DIALOG_TEXT, fancyText.Flag.ChangeHeightWhileAnimating, true)
+//     fancyText.setTextFlag(DIALOG_TEXT, fancyText.Flag.ChangeWidthWhileAnimating, true)
+//     // fancyText.animateAtSpeed(DIALOG_TEXT, fancyText.TextSpeed.Fast, fancyText.AnimationPlayMode.InBackground)
+//     // DIALOG_LABEL.setPosition(40, 52)
+//     // DIALOG_TEXT.setPosition(45, 68)
+//     // DIALOG_LABEL.setFlag(SpriteFlag.RelativeToCamera, true)
+//     // DIALOG_TEXT.setFlag(SpriteFlag.RelativeToCamera, true)
+//     // fancyText.setText(DIALOG_LABEL, Label)
+//     fancyText.setText(DIALOG_TEXT, Text)
+//     // fancyText.animateForTime(DIALOG_LABEL, 1000, fancyText.AnimationPlayMode.UntilDone)
+//     fancyText.animateAtSpeed(DIALOG_TEXT, fancyText.TextSpeed.VeryFast, fancyText.AnimationPlayMode.UntilDone)
+// }
 
-controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
-    Dialog("Cone-Guy", "Hey Bon! What's Up?")
-})
+// controller.A.onEvent(ControllerButtonEvent.Pressed, () => {
+//     Dialog("Cone-Guy", "Hey Bon! What's Up?")
+// })

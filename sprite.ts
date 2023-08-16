@@ -62,10 +62,10 @@ namespace fancyText {
         protected frame: Image;
         protected textFlags: number;
 
-        protected animationSpeed: number;
-        protected animationOffset: number;
-        protected animationTimer: number;
-        protected animationId: number;
+        protected nextId: number;
+        protected startLine: number;
+        protected drawnLines: number;
+        protected animation: AnimationState;
 
         protected sound: music.Playable;
 
@@ -74,9 +74,11 @@ namespace fancyText {
 
             this.color = 1;
             this.maxWidth = 0;
+            this.nextId = 0;
             this.textFlags = Flag.ChangeHeightWhileAnimating | Flag.AlwaysOccupyMaxWidth;
             this.setText(text);
-            this.animationId = 0;
+            this.startLine = 0;
+
             state().sprites.push(this);
         }
 
@@ -86,27 +88,31 @@ namespace fancyText {
             if (this.frame) {
                 drawFrame(screen, this.frame, drawLeft, drawTop, this.width, this.height);
                 const frameUnit = Math.idiv(this.frame.width, 3);
-                drawFontText(drawLeft + frameUnit, drawTop + frameUnit, this.text, this.lines, this.color, font, this.animationSpeed ? this.animationOffset : this.text.length);
+                drawFontText(
+                    drawLeft + frameUnit,
+                    drawTop + frameUnit,
+                    this.text,
+                    this.visibleLines(),
+                    this.color,
+                    font,
+                    this.animation ? this.animation.getOffset() : this.text.length
+                );
             }
             else {
-                drawFontText(drawLeft, drawTop, this.text, this.lines, this.color, font, this.animationSpeed ? this.animationOffset : this.text.length);
+                drawFontText(
+                    drawLeft,
+                    drawTop,
+                    this.text,
+                    this.visibleLines(),
+                    this.color,
+                    font,
+                    this.animation ? this.animation.getOffset() : this.text.length);
             }
         }
 
         preUpdate(deltaTimeMillis: number) {
-            if (this.animationSpeed) {
-                this.animationTimer -= deltaTimeMillis;
-
-                let didPrintCharacter = false;
-                while (this.animationTimer < 0) {
-                    this.animationOffset++;
-                    this.animationTimer += this.getTimerAtOffset(this.animationOffset);
-                    didPrintCharacter = true;
-                }
-
-                if (this.animationOffset >= this.length()) this.animationSpeed = undefined;
-
-                if (didPrintCharacter) {
+            if (this.animation) {
+                if (this.animation.update(deltaTimeMillis)) {
                     if (this.sound) {
                         this.sound.play(music.PlaybackMode.InBackground);
                     }
@@ -114,19 +120,15 @@ namespace fancyText {
                         this.recalculateDimensions();
                     }
                 }
+
+                if (this.animation.isFinished()) {
+                    this.animation = undefined;
+                }
             }
         }
 
         length(): number {
-            let length = 0;
-
-            for (const line of this.lines) {
-                for (const span of line.spans) {
-                    length += span.length
-                }
-            }
-
-            return length;
+            return calculateTextLength(this.lines, 0, this.lines.length);
         }
 
         setText(text: string) {
@@ -157,69 +159,62 @@ namespace fancyText {
             this.recalculateLines();
         }
 
+        setMaxLines(lines: number) {
+            this.drawnLines = lines;
+        }
+
+        setStartLine(line: number) {
+            this.startLine = line;
+            this.recalculateDimensions();
+        }
+
+        nextPage() {
+            this.setStartLine(this.startLine + this.drawnLines);
+        }
+
+        hasNextPage() {
+            if (this.drawnLines <= 0) return false;
+            return this.startLine + this.drawnLines < this.lines.length
+        }
+
         animateAtSpeed(charactersPerSecond: number) {
-            this.animationSpeed = Math.max(charactersPerSecond, 0.001);
-            this.animationOffset = 0;
-            this.animationTimer = this.getTimerAtOffset(0);
-            this.animationId++;
+            this.animation = new AnimationState(
+                this.nextId++,
+                this.visibleLines(),
+                Math.max(charactersPerSecond, 0.001),
+                this.getAnimationStartOffset()
+            )
             this.recalculateDimensions();
         }
 
         animateForTime(timeMillis: number) {
-            let length = 0;
-            for (const line of this.lines) {
-                for (const span of line.spans) {
-                    if (span.flags & Tag.VerySlow) {
-                        length += 12 * span.length;
-                    }
-                    else if (span.flags & Tag.Slow) {
-                        length += 4 * span.length;
-                    }
-                    else if (span.flags & Tag.Fast) {
-                        length += 0.5 * span.length;
-                    }
-                    else if (span.flags & Tag.VeryFast) {
-                        length += 0.25 * span.length;
-                    }
-                    else {
-                        length += span.length;
-                    }
-                }
+            let length: number;
+
+            if (this.startLine > 0) {
+                length = calculateAnimationLength(this.lines, this.startLine, this.startLine + this.drawnLines);
+            }
+            else {
+                length = calculateAnimationLength(this.lines, 0, this.lines.length);
             }
             this.animateAtSpeed(length * 1000 / timeMillis)
         }
 
         remainingAnimationTime(): number {
-            if (!this.animationSpeed) return 0;
-
-            let time = this.animationTimer;
-            let i = 0;
-            for (const line of this.lines) {
-                for (const span of line.spans) {
-                    if (i > this.animationOffset) {
-                        time += this.getTimerAtOffset(i) * span.length;
-                    }
-                    else if (i + span.length > this.animationOffset) {
-                        time += this.getTimerAtOffset(i) * (span.length - (this.animationOffset - i))
-                    }
-                    i += span.length
-                }
-            }
-
-            return time;
+            if (!this.animation) return 0;
+            return this.animation.remainingAnimationTime();
         }
 
         pauseUntilAnimationIsComplete() {
-            if (!this.animationSpeed) return;
+            if (!this.animation) return;
 
             // If animate is called a second time, animationId will change and
             // the pause will end
-            const id = this.animationId;
-            pauseUntil(() => !this.animationSpeed || id !== this.animationId);
+            const id = this.animation.id;
+            pauseUntil(() => !this.animation || id !== this.animation.id);
         }
 
         cancelAnimation() {
-            this.animationSpeed = 0;
+            this.animation = undefined;
         }
 
         setAnimationSound(sound: music.Playable) {
@@ -266,22 +261,33 @@ namespace fancyText {
             }
 
             this.recalculateDimensions();
+
+            if (this.animation) {
+                const old = this.animation;
+                this.animation = new AnimationState(
+                    old.id,
+                    this.visibleLines(),
+                    old.speed,
+                    this.getAnimationStartOffset()
+                );
+                this.animation.setOffset(old.getOffset());
+            }
         }
 
         protected recalculateDimensions() {
             let width = 0;
             let height = 0;
 
-            if (this.animationSpeed && (this.textFlags & (Flag.ChangeHeightWhileAnimating | Flag.ChangeWidthWhileAnimating))) {
+            if (this.animation && (this.textFlags & (Flag.ChangeHeightWhileAnimating | Flag.ChangeWidthWhileAnimating))) {
                 let offset = 0;
-                for (const line of this.lines) {
+                for (const line of this.animation.lines) {
                     let lineWidth = 0;
                     for (const span of line.spans) {
                         if (this.textFlags & Flag.ChangeWidthWhileAnimating) {
                             const font = getFontForSpan(span.flags) || this.defaultFont || getDefaultFont(this.text);
 
-                            if (offset + span.length > this.animationOffset) {
-                                lineWidth += getTextWidth(font, this.text, span.offset, span.offset + (this.animationOffset - offset))
+                            if (offset + span.length > this.animation.getOffset()) {
+                                lineWidth += getTextWidth(font, this.text, span.offset, span.offset + (this.animation.getOffset() - offset))
                                 offset += span.length;
                                 break;
                             }
@@ -299,16 +305,21 @@ namespace fancyText {
                     width = Math.max(lineWidth, width);
                     height += line.height;
 
-                    if (offset > this.animationOffset) break;
+                    if (offset > this.animation.getOffset()) break;
                 }
-
             }
             else {
-                for (let i = 0; i < this.lines.length; i++) {
-                    const line = this.lines[i];
-
+                for (const line of this.visibleLines()) {
                     width = Math.max(line.width, width);
                     height += line.height;
+                }
+            }
+
+            // If we are drawing pages, we need to fix the height for the last page
+            if (!(this.textFlags & Flag.ChangeHeightWhileAnimating) && this.drawnLines > 0) {
+                height = 0;
+                for (let i = 0; i < this.drawnLines; i++) {
+                    height += this.lines[Math.max(0, this.lines.length - this.drawnLines - 1 + i)].height
                 }
             }
 
@@ -320,6 +331,7 @@ namespace fancyText {
                 height = Math.max(height, this.frame.height);
             }
 
+
             if (this.textFlags & Flag.AlwaysOccupyMaxWidth && this.maxWidth) {
                 width = this.maxWidth;
             }
@@ -327,10 +339,87 @@ namespace fancyText {
             this.setDimensions(width, height)
         }
 
+        protected getAnimationStartOffset() {
+            return calculateTextLength(this.lines, 0, this.startLine);
+        }
+
+        protected visibleLines() {
+            if (this.drawnLines > 0) {
+                return this.lines.slice(this.startLine, this.startLine + this.drawnLines);
+            }
+            return this.lines;
+        }
+    }
+
+    class AnimationState {
+        protected timer: number;
+        protected offset: number;
+        protected endOffset: number;
+
+        constructor(
+            public id: number,
+            public lines: Line[],
+            public speed: number,
+            public startOffset: number
+        ) {
+            this.setOffset(0);
+            this.endOffset = startOffset + calculateTextLength(lines, 0, lines.length);
+        }
+
+        setOffset(offset: number) {
+            this.offset = offset;
+            this.timer = this.getTimerAtOffset(offset);
+        }
+
+        getOffset() {
+            return this.offset;
+        }
+
+        update(deltaTimeMillis: number) {
+            if (this.isFinished()) return false;
+
+            this.timer -= deltaTimeMillis;
+
+            let didPrintCharacter = false;
+            while (this.timer < 0) {
+                this.offset++;
+                this.timer += this.getTimerAtOffset(this.offset);
+                didPrintCharacter = true;
+            }
+
+            if (this.startOffset + this.offset >= this.endOffset) return true;
+
+            return didPrintCharacter;
+        }
+
+        remainingAnimationTime(): number {
+            if (!this.speed) return 0;
+
+            let time = this.timer;
+            let i = 0;
+            for (const line of this.lines) {
+                for (const span of line.spans) {
+                    if (i > this.offset) {
+                        time += this.getTimerAtOffset(i) * span.length;
+                    }
+                    else if (i + span.length > this.offset) {
+                        time += this.getTimerAtOffset(i) * (span.length - (this.offset - i))
+                    }
+                    i += span.length
+                }
+            }
+
+            return time;
+        }
+
+        isFinished() {
+            return this.startOffset + this.offset >= this.endOffset;
+        }
+
         protected getTimerAtOffset(offset: number) {
             const span = getSpanAtOffset(this.lines, offset);
 
-            let timer = 1000 / this.animationSpeed;
+            let timer = 1000 / this.speed;
 
             if (!span) return timer;
 
@@ -362,6 +451,43 @@ namespace fancyText {
             }
         }
         return undefined;
+    }
+
+    function calculateTextLength(lines: Line[], startLine: number, endLine: number) {
+        let length = 0;
+
+        for (const line of lines.slice(startLine, endLine)) {
+            for (const span of line.spans) {
+                length += span.length
+            }
+        }
+
+        return length;
+    }
+
+    function calculateAnimationLength(lines: Line[], startLine: number, endLine: number) {
+        let length = 0;
+        for (const line of lines.slice(startLine, endLine)) {
+            for (const span of line.spans) {
+                if (span.flags & Tag.VerySlow) {
+                    length += 12 * span.length;
+                }
+                else if (span.flags & Tag.Slow) {
+                    length += 4 * span.length;
+                }
+                else if (span.flags & Tag.Fast) {
+                    length += 0.5 * span.length;
+                }
+                else if (span.flags & Tag.VeryFast) {
+                    length += 0.25 * span.length;
+                }
+                else {
+                    length += span.length;
+                }
+            }
+        }
+
+        return length;
     }
 
     export function getDefaultFont(text: string) {
