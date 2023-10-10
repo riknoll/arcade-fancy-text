@@ -106,7 +106,8 @@ namespace fancyText {
                     this.visibleLines(),
                     this.color,
                     font,
-                    this.animation ? this.animation.getOffset() : this.text.length);
+                    this.animation ? this.animation.getOffset() : this.text.length
+                );
             }
         }
 

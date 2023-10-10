@@ -1,5 +1,5 @@
 
-const lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+const lorem = "<wavy>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
 
 
@@ -113,60 +113,89 @@ myTextSprite.setTextFlag(fancyText.Flag.ChangeWidthWhileAnimating, false)
 myTextSprite.setMaxLines(3)
 
 fancyText.setFont(myTextSprite, fancyText.italic_small)
-fancyText.setFrame(myTextSprite, img`
-    ..bbbbbbbbbbbbbbbbbbbb..
-    .b11bb11bb11bb11bb11bbb.
-    bbb11bb11bb11bb11bb11b1b
-    bb1bbbbbbbbbbbbbbbbbb11b
-    b11bb11111111111111bb1bb
-    b1bb1111111111111111bbbb
-    bbbb1111111111111111bb1b
-    bb1b1111111111111111b11b
-    b11b1111111111111111b1bb
-    b1bb1111111111111111bbbb
-    bbbb1111111111111111bb1b
-    bb1b1111111111111111b11b
-    b11b1111111111111111b1bb
-    b1bb1111111111111111bbbb
-    bbbb1111111111111111bb1b
-    bb1b1111111111111111b11b
-    b11b1111111111111111b1bb
-    b1bb1111111111111111bbbb
-    bbbb1111111111111111bb1b
-    bb1bb11111111111111bb11b
-    b11bbbbbbbbbbbbbbbbbb1bb
-    b1b11bb11bb11bb11bb11bbb
-    .bbb11bb11bb11bb11bb11b.
-    ..bbbbbbbbbbbbbbbbbbbb..
-    `)
+// fancyText.setFrame(myTextSprite, img`
+//     ..bbbbbbbbbbbbbbbbbbbb..
+//     .b11bb11bb11bb11bb11bbb.
+//     bbb11bb11bb11bb11bb11b1b
+//     bb1bbbbbbbbbbbbbbbbbb11b
+//     b11bb11111111111111bb1bb
+//     b1bb1111111111111111bbbb
+//     bbbb1111111111111111bb1b
+//     bb1b1111111111111111b11b
+//     b11b1111111111111111b1bb
+//     b1bb1111111111111111bbbb
+//     bbbb1111111111111111bb1b
+//     bb1b1111111111111111b11b
+//     b11b1111111111111111b1bb
+//     b1bb1111111111111111bbbb
+//     bbbb1111111111111111bb1b
+//     bb1b1111111111111111b11b
+//     b11b1111111111111111b1bb
+//     b1bb1111111111111111bbbb
+//     bbbb1111111111111111bb1b
+//     bb1bb11111111111111bb11b
+//     b11bbbbbbbbbbbbbbbbbb1bb
+//     b1b11bb11bb11bb11bb11bbb
+//     .bbb11bb11bb11bb11bb11b.
+//     ..bbbbbbbbbbbbbbbbbbbb..
+//     `
+// )
+
+controller.moveSprite(myTextSprite)
+
 fancyText.setMaxWidth(myTextSprite, 160)
-fancyText.setAnimationSound(myTextSprite, music.createSoundEffect(WaveShape.Square, 519, 519, 100, 0, 100, SoundExpressionEffect.Warble, InterpolationCurve.Linear))
 
-control.runInBackground(() => {
-    while (true) {
-        fancyText.animateAtSpeed(myTextSprite, 30, fancyText.AnimationPlayMode.InBackground)
-        controller.A.pauseUntil(ControllerButtonEvent.Pressed)
+myTextSprite.setFlag(SpriteFlag.Invisible, true);
 
-        if (myTextSprite.remainingAnimationTime() > 0) {
-            myTextSprite.cancelAnimation();
-            controller.A.pauseUntil(ControllerButtonEvent.Pressed)
-        }
+myTextSprite.x = 80;
+myTextSprite.y = 60;
 
-        if (myTextSprite.hasNextPage()) {
-            myTextSprite.nextPage()
-        }
-        else {
-            break;
-        }
-    }
+game.onShade(() => {
+    const left = 10, top = 10, width = 20, height = 40;
+
+    screen.fillRect(myTextSprite.left, myTextSprite.top, myTextSprite.width, myTextSprite.height, 2);
+    screen.fillRect(left, top, width, height, 3);
+
+    // myTextSprite.drawInBox(
+    //     myTextSprite.left,
+    //     myTextSprite.top,
+    //     left,
+    //     top,
+    //     left + width,
+    //     top + height
+    // )
+
+    screen.printCenter(`${Math.round(myTextSprite.left)} ${Math.round(myTextSprite.top)}`, 100, 1)
+
 })
 
+// fancyText.setAnimationSound(myTextSprite, music.createSoundEffect(WaveShape.Square, 519, 519, 100, 0, 100, SoundExpressionEffect.Warble, InterpolationCurve.Linear))
 
-fancyText.setColor(myTextSprite, 15)
-game.onUpdate(function () {
-    myTextSprite.bottom = 120
-    myTextSprite.left = 0
-})
+// control.runInBackground(() => {
+//     while (true) {
+//         fancyText.animateAtSpeed(myTextSprite, 30, fancyText.AnimationPlayMode.InBackground)
+//         controller.A.pauseUntil(ControllerButtonEvent.Pressed)
+
+//         if (myTextSprite.remainingAnimationTime() > 0) {
+//             myTextSprite.cancelAnimation();
+//             controller.A.pauseUntil(ControllerButtonEvent.Pressed)
+//         }
+
+//         if (myTextSprite.hasNextPage()) {
+//             myTextSprite.nextPage()
+//         }
+//         else {
+//             break;
+//         }
+//     }
+// })
+
+
+// fancyText.setColor(myTextSprite, 15)
+// game.onUpdate(function () {
+//     myTextSprite.bottom = 120
+//     myTextSprite.left = 0
+// })
 
 game.stats = true
 
