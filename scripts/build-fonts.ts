@@ -7,15 +7,22 @@ import { Glyph, createGlyph, getPixel } from "../../font-editor/src/lib/glyph";
 const testText = `The Quick Brown Fox Jumped Over The Lazy Dog`;
 const testText2 = `Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz 0123456789 .!?"'(){}[]`;
 async function main() {
-    const fontRoot = path.resolve("../fonts");
-    const previewRoot = path.resolve("../previews");
-    const markdownPath = path.resolve("../README.md");
-    const tsPath = path.resolve("../built-fonts.ts");
+    const fontRoot = path.resolve("fonts");
+    const previewRoot = path.resolve("previews");
+    const builtFontRoot = path.resolve("built-fonts");
+    const markdownPath = path.resolve("README.md");
+    const pxtJsonPath = path.resolve("pxt.json");
     const root = path.dirname(markdownPath);
 
     const fontFiles = fs.readdirSync(fontRoot);
     let markdownOut = "";
-    let namespaceOut = "";
+    const builtFiles: string[] = [];
+
+    if (fs.existsSync(builtFontRoot)) {
+        fs.rmSync(builtFontRoot, { recursive: true, force: true });
+    }
+
+    fs.mkdirSync(builtFontRoot);
 
     for (const file of fontFiles) {
         const p = path.join(fontRoot, file);
@@ -25,11 +32,12 @@ async function main() {
         const c = renderFont(parsed, testText2);
         const scaled = scaleCanvas(c, 4);
 
-        const outFile = path.join(previewRoot, file.split(".")[0] + ".png")
-        const out = fs.createWriteStream(outFile);
+        const outPng = path.join(previewRoot, file.split(".")[0] + ".png");
+        const outFile = file.split(".")[0] + ".ts";
+        const out = fs.createWriteStream(outPng);
         const stream = scaled.createPNGStream();
         stream.pipe(out);
-        out.on("finish", () => console.log("wrote " + outFile));
+        out.on("finish", () => console.log("wrote " + outPng));
 
         const nameParts = file.split(".")[0].split("-");
         const name = nameParts.filter(p => p !== "font").join(" ");
@@ -40,13 +48,21 @@ async function main() {
         markdownOut += `### ${name}\n\n`;
         markdownOut += `* Character height: ${parsed.meta.defaultHeight}\n`;
         markdownOut += `* Line height: ${parsed.meta.defaultHeight + parsed.meta.ascenderHeight + parsed.meta.descenderHeight}\n\n`;
-        markdownOut += `![Preview of ${name} font](${path.relative(root, outFile)})\n\n`;
+        markdownOut += `![Preview of ${name} font](${path.relative(root, outPng)})\n\n`;
 
-        namespaceOut += `    //% whenUsed\n`;
-        namespaceOut += `    //% fixedInstance\n`;
-        namespaceOut += `    //% block="${name}"\n`;
-        namespaceOut += `    //% blockIdentity="fancyText.__fontPicker"\n`;
-        namespaceOut += `    export const ${id}: fancyText.BaseFont = new Font(hex\`${encoded}\`);\n\n`
+        let tsOut = `// DO NOT EDIT! Run scripts/build-fonts.ts to generate\n\n\n`
+        tsOut += `namespace fancyText {\n`
+        tsOut += `    //% whenUsed\n`;
+        tsOut += `    //% fixedInstance\n`;
+        tsOut += `    //% block="${name}"\n`;
+        tsOut += `    //% blockIdentity="fancy_text.__fontPicker"\n`;
+        tsOut += `    export const ${id}: fancyText.BaseFont = new Font(hex\`${encoded}\`);\n\n`
+        tsOut += `}\n`;
+
+        fs.writeFileSync(path.join(builtFontRoot, outFile), tsOut, "utf-8");
+        console.log(`Wrote built-fonts/${outFile}`)
+
+        builtFiles.push(`built-fonts/${outFile}`)
     }
 
     const markdown = fs.readFileSync(markdownPath, { encoding: "utf-8" });
@@ -58,10 +74,10 @@ async function main() {
     fs.writeFileSync(markdownPath, out);
     console.log("Wrote README.md");
 
-    let tsOut = `namespace fancyText {\n${namespaceOut}}\n`;
-    tsOut = `// DO NOT EDIT! Run scripts/built-fonts.ts to generate\n\n\n` + tsOut;
-    fs.writeFileSync(tsPath, tsOut)
-    console.log("Wrote built-fonts.ts");
+    const pxtJson = JSON.parse(fs.readFileSync(pxtJsonPath, "utf-8"));
+    pxtJson.files = (pxtJson.files as string[]).filter(file => !file.startsWith("built-fonts") && file !== "main.ts").concat(builtFiles).concat(["main.ts"]);
+    fs.writeFileSync(pxtJsonPath, JSON.stringify(pxtJson, null, 4), "utf-8")
+    console.log("Wrote pxt.json");
 }
 
 function renderFont(font: Font, text: string) {
