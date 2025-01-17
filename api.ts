@@ -134,10 +134,58 @@ namespace fancyText {
     //% maxWidth.defl="100"
     //% group=Create
     //% weight=80
+    //% blockGap=8
     //% help=github:arcade-fancy-text/docs/set-max-width
     export function setMaxWidth(sprite: Sprite, maxWidth: number) {
         assertTextSprite(sprite);
         (sprite as TextSprite).setMaxWidth(maxWidth);
+    }
+
+    /**
+     * Sets the height for each line in the text. This overrides
+     * the height set by the chosen font. Passing 0 will reset
+     * the line height to the default behavior
+     *
+     * @param sprite The TextSprite to set the frame on
+     * @param height The height for each line of the text
+     */
+    //% blockId=fancy_text_set_line_height
+    //% block="$sprite set line height $height"
+    //% sprite.shadow=variables_get
+    //% sprite.defl=myTextSprite
+    //% height.min=0
+    //% height.max=48
+    //% group=Create
+    //% weight=79
+    //% blockGap=8
+    //% help=github:arcade-fancy-text/docs/set-line-height
+    export function setLineHeight(sprite: Sprite, height: number) {
+        assertTextSprite(sprite);
+        (sprite as TextSprite).setLineHeight(height);
+    }
+
+    /**
+     * Sets the minimum number of lines to be used when
+     * calculating the height of this TextSprite. The sprite
+     * can exceed this number of lines if the max width is
+     * set and the chosen text cannot fit within this number
+     * of lines.
+     *
+     * @param sprite The TextSprite to set the frame on
+     * @param lines The minimum number of lines to use in height calculations
+     */
+    //% blockId=fancy_text_set_min_lines
+    //% block="$sprite set minimum lines $lines"
+    //% sprite.shadow=variables_get
+    //% sprite.defl=myTextSprite
+    //% lines.min=0
+    //% lines.max=10
+    //% group=Create
+    //% weight=78
+    //% help=github:arcade-fancy-text/docs/set-min-lines
+    export function setMinLines(sprite: Sprite, lines: number) {
+        assertTextSprite(sprite);
+        (sprite as TextSprite).setMinLines(lines);
     }
 
     /**

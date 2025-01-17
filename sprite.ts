@@ -61,6 +61,8 @@ namespace fancyText {
         protected defaultFont: BaseFont;
         protected frame: Image;
         protected textFlags: number;
+        protected lineHeight: number;
+        protected minLines: number;
 
         protected nextId: number;
         protected startLine: number;
@@ -247,6 +249,16 @@ namespace fancyText {
             }
         }
 
+        setLineHeight(height: number) {
+            this.lineHeight = Math.floor(Math.max(height, 0));
+            this.recalculateLines();
+        }
+
+        setMinLines(lines: number) {
+            this.minLines = Math.floor(Math.max(lines, 0));;
+            this.recalculateDimensions();
+        }
+
         protected recalculateLines() {
             if (this.maxWidth) {
                 if (this.frame) {
@@ -259,6 +271,12 @@ namespace fancyText {
             }
             else {
                 this.lines = getLines(this.text, this.spans, 0xffffffff, this.defaultFont || getDefaultFont(this.text));
+            }
+
+            if (this.lineHeight) {
+                for (const line of this.lines) {
+                    line.height = this.lineHeight;
+                }
             }
 
             this.recalculateDimensions();
@@ -335,6 +353,21 @@ namespace fancyText {
 
             if (this.textFlags & Flag.AlwaysOccupyMaxWidth && this.maxWidth) {
                 width = this.maxWidth;
+            }
+
+            if (this.minLines) {
+                let lineheight = this.lineHeight;
+
+                if (!lineheight) {
+                    if (this.defaultFont) {
+                        lineheight = this.defaultFont.lineHeight;
+                    }
+                    else {
+                        this.lineHeight = getDefaultFont(this.text).lineHeight;
+                    }
+                }
+
+                height = Math.max(height, this.minLines * this.lineHeight);
             }
 
             this.setDimensions(width, height)
