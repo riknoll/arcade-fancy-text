@@ -351,6 +351,54 @@ namespace fancyText {
     }
 
     /**
+     * Draws some text to an image or the screen.
+     *
+     * @param text The text for the sprite to display
+     * @param target The image to draw the text to
+     * @param left The x value to draw the text at
+     * @param top The y value to draw the text at
+     * @param maxWidth The maximum width of the text. If the text is wider, it will be broken into multiple lines
+     * @param color The color of the text
+     * @param font The font to use when drawing the text
+     */
+    //% blockId=fancy_text_draw
+    //% block="draw $text to $target at x $left y $top||with max width $maxWidth color $color font $font"
+    //% text.defl="abc"
+    //% target.shadow=fancy_text_get_screen
+    //% maxWidth.defl=0
+    //% maxWidth.min=0
+    //% color.shadow=colorindexpicker
+    //% font.shadow=fancy_text__fontPicker
+    //% blockSetVariable=myTextSprite
+    //% inlineInputMode=inline
+    //% group=Draw
+    //% weight=100
+    //% help=github:arcade-fancy-text/docs/create
+    export function draw(text: string, target: Image, left: number, top: number, maxWidth?: number, color?: number, font?: BaseFont): void {
+        font = font || getDefaultFont(this.text);
+        color = color === undefined ? 1 : color;
+        maxWidth = maxWidth || 0xffffffff;
+
+        const spans = getSpans(text);
+        const lines = getLines(text, spans, maxWidth, font);
+
+        drawFontText(left, top, text, lines, color, font, text.length, target);
+    }
+
+    /**
+     * Returns a reference to the screen image. Note that drawing to this image will
+     * have no effect unless done at the correct step in the game's render loop.
+     *
+     * @returns The screen image
+     */
+    //% blockId=fancy_text_get_screen
+    //% block="screen"
+    //% blockHidden=1
+    export function getScreen(): Image {
+        return screen;
+    }
+
+    /**
      * A Font that can be used with TextSprites
      */
     //% shim=TD_ID

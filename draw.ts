@@ -1,7 +1,7 @@
 namespace fancyText {
     const rainbow = img`245768ca`
 
-    export function drawFontText(left: number, top: number, text: string, lines: Line[], defaultColor: number, defaultFont: fancyText.BaseFont, length: number) {
+    export function drawFontText(left: number, top: number, text: string, lines: Line[], defaultColor: number, defaultFont: fancyText.BaseFont, length: number, target: Image = screen) {
         let currentLeft = left;
         let printedLines = 1;
         for (const line of lines) {
@@ -11,10 +11,10 @@ namespace fancyText {
                 const color = getColorForSpan(span.flags) || defaultColor;
 
                 if (font.lineHeight === line.height) {
-                    drawFontSpan(currentLeft, top, text.substr(span.offset, span.length), font, color, span.flags, left, length);
+                    drawFontSpan(currentLeft, top, text.substr(span.offset, span.length), font, color, span.flags, left, length, target);
                 }
                 else {
-                    drawFontSpan(currentLeft, top + (line.height >> 1) - (font.lineHeight >> 1), text.substr(span.offset, span.length), font, color, span.flags, left, length);
+                    drawFontSpan(currentLeft, top + (line.height >> 1) - (font.lineHeight >> 1), text.substr(span.offset, span.length), font, color, span.flags, left, length, target);
                 }
 
                 length -= span.length;
@@ -79,7 +79,7 @@ namespace fancyText {
         return 0;
     }
 
-    function drawFontSpan(left: number, top: number, text: string, font: fancyText.BaseFont, color: number, flags: number, absoluteLeft: number, length: number) {
+    function drawFontSpan(left: number, top: number, text: string, font: fancyText.BaseFont, color: number, flags: number, absoluteLeft: number, length: number, target: Image = screen) {
         if (flags & Tag.Blinking) {
             if (Math.idiv(game.runtime(), 250) % 2 === 0) {
                 return;
@@ -108,7 +108,7 @@ namespace fancyText {
                 const char = text.charAt(i);
                 const code = text.charCodeAt(i);
 
-                printText(screen, font, char, x, y, color);
+                printText(target, font, char, x, y, color);
 
                 if (char == " " || !font.isInFont(code)) {
                     x += font.wordSpacing;
@@ -119,10 +119,10 @@ namespace fancyText {
             }
         }
         else if (length < text.length) {
-            printText(screen, font, text.substr(0, length), left, top, color);
+            printText(target, font, text.substr(0, length), left, top, color);
         }
         else {
-            printText(screen, font, text, left, top, color);
+            printText(target, font, text, left, top, color);
         }
     }
 
