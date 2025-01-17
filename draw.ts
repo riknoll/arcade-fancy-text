@@ -1,7 +1,8 @@
 namespace fancyText {
     const rainbow = img`245768ca`
 
-    export function drawFontText(left: number, top: number, text: string, lines: Line[], defaultColor: number, defaultFont: fancyText.BaseFont, length: number, target: Image = screen) {
+    export function drawFontText(left: number, top: number, text: string, lines: Line[], defaultColor: number, defaultFont: fancyText.BaseFont, length: number, target?: Image) {
+        if (!target) target = screen;
         let currentLeft = left;
         let printedLines = 1;
         for (const line of lines) {
@@ -79,7 +80,8 @@ namespace fancyText {
         return 0;
     }
 
-    function drawFontSpan(left: number, top: number, text: string, font: fancyText.BaseFont, color: number, flags: number, absoluteLeft: number, length: number, target: Image = screen) {
+    function drawFontSpan(left: number, top: number, text: string, font: fancyText.BaseFont, color: number, flags: number, absoluteLeft: number, length: number, target?: Image) {
+        if (!target) target = screen;
         if (flags & Tag.Blinking) {
             if (Math.idiv(game.runtime(), 250) % 2 === 0) {
                 return;
