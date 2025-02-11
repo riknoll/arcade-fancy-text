@@ -1,6 +1,6 @@
 {
     "name": "arcade-fancy-text",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "files": [
         "docs/animate-at-speed.md",
         "docs/animate-for-time.md",
