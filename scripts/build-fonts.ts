@@ -55,7 +55,7 @@ async function main() {
         tsOut += `    //% whenUsed\n`;
         tsOut += `    //% fixedInstance\n`;
         tsOut += `    //% block="${name}"\n`;
-        tsOut += `    //% blockIdentity="fancy_text.__fontPicker"\n`;
+        tsOut += `    //% blockIdentity="fancyText.__fontPicker"\n`;
         tsOut += `    export const ${id}: fancyText.BaseFont = new Font(hex\`${encoded}\`);\n\n`
         tsOut += `}\n`;
 
