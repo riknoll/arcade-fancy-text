@@ -423,7 +423,7 @@ namespace fancyText {
     //% weight=100
     //% help=github:arcade-fancy-text/docs/create
     export function draw(text: string, target: Image, left: number, top: number, maxWidth?: number, color?: number, font?: BaseFont): void {
-        font = font || getDefaultFont(this.text);
+        font = font || getDefaultFont(text);
         color = color === undefined ? 1 : color;
         maxWidth = maxWidth || 0xffffffff;
 
