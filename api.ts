@@ -417,7 +417,6 @@ namespace fancyText {
     //% maxWidth.min=0
     //% color.shadow=colorindexpicker
     //% font.shadow=fancy_text__fontPicker
-    //% blockSetVariable=myTextSprite
     //% inlineInputMode=inline
     //% group=Draw
     //% weight=100
