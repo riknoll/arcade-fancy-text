@@ -124,7 +124,7 @@ function renderFont(font: Font, text: string) {
         return width;
     });
 
-    const lineHeight = font.meta.defaultHeight + font.meta.descenderHeight + font.meta.ascenderHeight;
+    const lineHeight = font.meta.defaultHeight + font.meta.descenderHeight + font.meta.ascenderHeight + 1;
 
     let bestLines = 1;
     let bestAspectRatio = 0;
@@ -221,16 +221,22 @@ function drawWord(word: string, glyphs: {[index: string]: Glyph}, font: Font, x:
             glyph,
             x + glyph.xOffset,
             y + glyph.yOffset + font.meta.ascenderHeight + font.meta.defaultHeight,
+            font.meta.twoTone,
             context
         );
         x += glyph.xOffset + glyph.width + font.meta.letterSpacing;
     }
 }
 
-function drawGlyph(glyph: Glyph, x: number, y: number, context: canvas.CanvasRenderingContext2D) {
+function drawGlyph(glyph: Glyph, x: number, y: number, twoTone: boolean, context: canvas.CanvasRenderingContext2D) {
     for (let ix = 0; ix < glyph.width; ix++) {
         for (let iy = 0; iy < glyph.height; iy++) {
-            if (getPixel(glyph, ix, iy)) {
+            if (twoTone && getPixel(glyph, ix, iy, 1)) {
+                context.fillStyle = "#aaaaaa"
+                context.fillRect(x + ix, y + iy, 1, 1);
+            }
+            else if (getPixel(glyph, ix, iy, 0)) {
+                context.fillStyle = "black"
                 context.fillRect(x + ix, y + iy, 1, 1);
             }
         }
@@ -250,6 +256,7 @@ function scaleCanvas(target: canvas.Canvas, scaleFactor: number) {
         for (let y = 0; y < target.height; y++) {
             const index = (x + y * target.width) << 2;
             if (inData.data[index + 3]) {
+                context.fillStyle = `rgb(${inData.data[index]},${inData.data[index + 1]},${inData.data[index + 2]})`
                 context.fillRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor);
             }
         }

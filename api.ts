@@ -227,6 +227,27 @@ namespace fancyText {
     }
 
     /**
+     * Creates a color for use with two-tone fonts. For non two-tone fonts,
+     * only the first color will be used.
+     *
+     * @param foreground The first color to use with the font
+     * @param background The second color to use with the font
+     * @returns A number containing both colors
+     */
+    //% blockId=fancy_text_two_tone_color
+    //% block="two-tone color $foreground $background"
+    //% foreground.shadow=colorindexpicker
+    //% foreground.defl=1
+    //% background.shadow=colorindexpicker
+    //% background.defl=15
+    //% group=Create
+    //% weight=64
+    //% help=github:arcade-fancy-text/docs/two-tone-color
+    export function twoToneColor(foreground: number, background: number) {
+        return (foreground & 0xf) | ((background & 0xf) << 4)
+    }
+
+    /**
      * Sets the font used when drawing this TextSprite. Not all fonts
      * can be used with all characters, so try using the "arcade default"
      * or "arcade unicode" font if your text is displaying incorrectly

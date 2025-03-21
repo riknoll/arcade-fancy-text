@@ -95,6 +95,13 @@
 
 ![Preview of outline medium font](previews/outline-medium-font.png)
 
+### outline two tone 12
+
+* Character height: 12
+* Line height: 18
+
+![Preview of outline two tone 12 font](previews/outline-two-tone-12-font.png)
+
 ### rounded large
 
 * Character height: 16
@@ -115,6 +122,13 @@
 * Line height: 12
 
 ![Preview of serif small font](previews/serif-small-font.png)
+
+### tiny 4
+
+* Character height: 4
+* Line height: 4
+
+![Preview of tiny 4 font](previews/tiny-4-font.png)
 
 
 <!-- font-preview-end -->

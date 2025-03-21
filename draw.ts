@@ -159,12 +159,29 @@ namespace fancyText {
             charWidth = font.charWidth(charCode);
             if (charWidth === 0) continue;
 
-            target.drawIcon(
-                font.writeCharacterBytes(imgBuf, charCode),
-                x + font.charXOffset(charCode),
-                y + font.baselineOffset + font.charYOffset(charCode),
-                color
-            );
+            if (font.isDualTone) {
+                target.drawIcon(
+                    font.writeCharacterBytes(imgBuf, charCode),
+                    x + font.charXOffset(charCode),
+                    y + font.baselineOffset + font.charYOffset(charCode),
+                    ((color >> 4) & 0xf) || getContrastingColor(color)
+                );
+
+                target.drawIcon(
+                    font.writeCharacterBytes(imgBuf, charCode, true),
+                    x + font.charXOffset(charCode),
+                    y + font.baselineOffset + font.charYOffset(charCode),
+                    color & 0xf
+                );
+            }
+            else {
+                target.drawIcon(
+                    font.writeCharacterBytes(imgBuf, charCode),
+                    x + font.charXOffset(charCode),
+                    y + font.baselineOffset + font.charYOffset(charCode),
+                    color & 0xf
+                );
+            }
 
             x += charWidth + font.letterSpacing;
         }
@@ -505,5 +522,12 @@ namespace fancyText {
 
             x += charWidth + font.letterSpacing;
         }
+    }
+
+
+    //% whenUsed
+    const colorMap = img` . f c c e 4 8 6 c 8 c c f e f 1`;
+    function getContrastingColor(color: number) {
+        return colorMap.getPixel(color, 0);
     }
 }

@@ -1,7 +1,9 @@
 namespace fancyText {
     //% fixedInstances
     export class BaseFont {
+        isDualTone: boolean;
         constructor() {
+            this.isDualTone = false;
         }
 
         get lineHeight() {
@@ -40,7 +42,7 @@ namespace fancyText {
             return false;
         }
 
-        writeCharacterBytes(target: Buffer, charCode: number,) {
+        writeCharacterBytes(target: Buffer, charCode: number, dualTone?: boolean) {
             return target
         }
     }
@@ -82,7 +84,7 @@ namespace fancyText {
             return 8 + ((this.font.charHeight + 7) >> 3) * this.font.charWidth;
         }
 
-        writeCharacterBytes(target: Buffer, charCode: number,) {
+        writeCharacterBytes(target: Buffer, charCode: number, dualTone? : boolean) {
             if (charCode < 32) return target;
 
             let cp = 0
@@ -123,12 +125,17 @@ namespace fancyText {
         }
     }
 
+    const SINGLE_TONE_MAGIC = 0x68f119db;
+    const DUAL_TONE_MAGIC = 0x68f119dc;
+
     export class Font extends BaseFont {
         static HEADER_LENGTH = 12;
         static LOOKUP_TABLE_ENTRY_LENGTH = 4;
 
+
         constructor(public buffer: Buffer) {
             super();
+            this.isDualTone = buffer.getNumber(NumberFormat.UInt32LE, 0) === DUAL_TONE_MAGIC;
         }
 
         get lineHeight() {
@@ -163,7 +170,7 @@ namespace fancyText {
             return this.charOffset(charCode) !== -1;
         }
 
-        writeCharacterBytes(target: Buffer, charCode: number,) {
+        writeCharacterBytes(target: Buffer, charCode: number, dualTone? : boolean) {
             const offset = this.charOffset(charCode);
             if (offset === -1) return target;
 
@@ -175,15 +182,28 @@ namespace fancyText {
             target[2] = bitmapWidth;
             target[4] = bitmapHeight;
 
-            target.write(
-                8,
-                this.buffer.slice(
-                    bitmapEntryStart + 5,
-                    8 + bitmapWidth * ((bitmapHeight + 7) >> 3)
-                )
-            )
+            const bitmapLength = bitmapWidth * ((bitmapHeight + 7) >> 3)
 
-            return target.slice(0, 8 + bitmapWidth * ((bitmapHeight + 7) >> 3));
+            if (dualTone) {
+                target.write(
+                    8,
+                    this.buffer.slice(
+                        bitmapEntryStart + 5 + bitmapLength,
+                        bitmapLength
+                    )
+                )
+            }
+            else {
+                target.write(
+                    8,
+                    this.buffer.slice(
+                        bitmapEntryStart + 5,
+                        bitmapLength
+                    )
+                )
+            }
+
+            return target.slice(0, 8 + bitmapLength);
         }
 
         bufferSize() {

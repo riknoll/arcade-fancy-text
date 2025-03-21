@@ -105,14 +105,14 @@ const lorem = "<wavy>Lorem ipsum dolor sit amet, consectetur adipiscing elit, se
 // myTextSprite.setColor(4)
 
 let myTextSprite: fancyText.TextSprite = null
-myTextSprite = fancyText.create(lorem)
+myTextSprite = fancyText.create(lorem, 160, fancyText.twoToneColor(10, 11), fancyText.outline_two_tone_12)
 myTextSprite.setTextFlag(fancyText.Flag.ChangeHeightWhileAnimating, false)
 myTextSprite.setTextFlag(fancyText.Flag.AlwaysOccupyMaxWidth, true)
 myTextSprite.setTextFlag(fancyText.Flag.ChangeWidthWhileAnimating, false)
 
 myTextSprite.setMaxLines(3)
 
-fancyText.setFont(myTextSprite, fancyText.italic_small)
+// fancyText.setFont(myTextSprite, fancyText.italic_small)
 // fancyText.setFrame(myTextSprite, img`
 //     ..bbbbbbbbbbbbbbbbbbbb..
 //     .b11bb11bb11bb11bb11bbb.
@@ -145,29 +145,29 @@ controller.moveSprite(myTextSprite)
 
 fancyText.setMaxWidth(myTextSprite, 160)
 
-myTextSprite.setFlag(SpriteFlag.Invisible, true);
+// myTextSprite.setFlag(SpriteFlag.Invisible, true);
 
 myTextSprite.x = 80;
 myTextSprite.y = 60;
 
-game.onShade(() => {
-    const left = 10, top = 10, width = 20, height = 40;
+// game.onShade(() => {
+//     const left = 10, top = 10, width = 20, height = 40;
 
-    screen.fillRect(myTextSprite.left, myTextSprite.top, myTextSprite.width, myTextSprite.height, 2);
-    screen.fillRect(left, top, width, height, 3);
+//     screen.fillRect(myTextSprite.left, myTextSprite.top, myTextSprite.width, myTextSprite.height, 2);
+//     screen.fillRect(left, top, width, height, 3);
 
-    // myTextSprite.drawInBox(
-    //     myTextSprite.left,
-    //     myTextSprite.top,
-    //     left,
-    //     top,
-    //     left + width,
-    //     top + height
-    // )
+//     // myTextSprite.drawInBox(
+//     //     myTextSprite.left,
+//     //     myTextSprite.top,
+//     //     left,
+//     //     top,
+//     //     left + width,
+//     //     top + height
+//     // )
 
-    screen.printCenter(`${Math.round(myTextSprite.left)} ${Math.round(myTextSprite.top)}`, 100, 1)
+//     screen.printCenter(`${Math.round(myTextSprite.left)} ${Math.round(myTextSprite.top)}`, 100, 1)
 
-})
+// })
 
 // fancyText.setAnimationSound(myTextSprite, music.createSoundEffect(WaveShape.Square, 519, 519, 100, 0, 100, SoundExpressionEffect.Warble, InterpolationCurve.Linear))
 

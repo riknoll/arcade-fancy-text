@@ -22,6 +22,7 @@
         "docs/set-text-flag.md",
         "docs/set-text.md",
         "docs/text-speed.md",
+        "docs/two-tone-color.md",
         "font.ts",
         "parse.ts",
         "draw.ts",
@@ -40,9 +41,11 @@
         "built-fonts/gothic-large-font.ts",
         "built-fonts/italic-small-font.ts",
         "built-fonts/outline-medium-font.ts",
+        "built-fonts/outline-two-tone-12-font.ts",
         "built-fonts/rounded-large-font.ts",
         "built-fonts/rounded-small-font.ts",
         "built-fonts/serif-small-font.ts",
+        "built-fonts/tiny-4-font.ts",
         "main.ts"
     ],
     "testFiles": [
