@@ -2,8 +2,8 @@ namespace fancyText {
     //% fixedInstances
     export class BaseFont {
         isDualTone: boolean;
+
         constructor() {
-            this.isDualTone = false;
         }
 
         get lineHeight() {
@@ -19,6 +19,10 @@ namespace fancyText {
         }
 
         get wordSpacing() {
+            return 0;
+        }
+
+        get lineSpacing() {
             return 0;
         }
 
@@ -44,6 +48,10 @@ namespace fancyText {
 
         writeCharacterBytes(target: Buffer, charCode: number, dualTone?: boolean) {
             return target
+        }
+
+        getKernOffset(charCode1: number, charCode2: number) {
+            return 0;
         }
     }
 
@@ -125,17 +133,38 @@ namespace fancyText {
         }
     }
 
-    const SINGLE_TONE_MAGIC = 0x68f119db;
-    const DUAL_TONE_MAGIC = 0x68f119dc;
+    // legacy
+    const V1_FONT_MAGIC = 0x68f119db;
+
+    const V2_FONT_MAGIC = 0x68f119dc;
+    const V2_DUAL_TONE_FONT_MAGIC = 0x68f119dd;
 
     export class Font extends BaseFont {
-        static HEADER_LENGTH = 12;
+        static V1_HEADER_LENGTH = 12;
+        static V2_HEADER_LENGTH = 13;
         static LOOKUP_TABLE_ENTRY_LENGTH = 4;
 
+        protected bitmapHeaderLength: number;
+        protected magic: number;
+        protected headerLength: number;
+        protected _lineSpacing: number;
 
         constructor(public buffer: Buffer) {
             super();
-            this.isDualTone = buffer.getNumber(NumberFormat.UInt32LE, 0) === DUAL_TONE_MAGIC;
+            this.magic = buffer.getNumber(NumberFormat.UInt32LE, 0);
+
+            this.isDualTone = this.magic === V2_DUAL_TONE_FONT_MAGIC;
+
+            if (this.magic === V1_FONT_MAGIC) {
+                this.bitmapHeaderLength = 5;
+                this.headerLength = Font.V1_HEADER_LENGTH;
+                this._lineSpacing = 0;
+            }
+            else {
+                this.bitmapHeaderLength = 6;
+                this.headerLength = Font.V2_HEADER_LENGTH;
+                this._lineSpacing = buffer[10];
+            }
         }
 
         get lineHeight() {
@@ -152,6 +181,10 @@ namespace fancyText {
 
         get wordSpacing() {
             return this.buffer[9];
+        }
+
+        get lineSpacing() {
+            return this._lineSpacing;
         }
 
         charWidth(charCode: number) {
@@ -183,12 +216,13 @@ namespace fancyText {
             target[4] = bitmapHeight;
 
             const bitmapLength = bitmapWidth * ((bitmapHeight + 7) >> 3)
+            const kernTableLength = this.buffer[bitmapEntryStart + 5]
 
             if (dualTone) {
                 target.write(
                     8,
                     this.buffer.slice(
-                        bitmapEntryStart + 5 + bitmapLength,
+                        bitmapEntryStart + this.bitmapHeaderLength + bitmapLength + kernTableLength * 3,
                         bitmapLength
                     )
                 )
@@ -197,7 +231,7 @@ namespace fancyText {
                 target.write(
                     8,
                     this.buffer.slice(
-                        bitmapEntryStart + 5,
+                        bitmapEntryStart + this.bitmapHeaderLength + kernTableLength * 3,
                         bitmapLength
                     )
                 )
@@ -207,7 +241,28 @@ namespace fancyText {
         }
 
         bufferSize() {
-            return 8 + this.buffer.getNumber(NumberFormat.UInt16LE, 10);
+            return 8 + this.buffer.getNumber(NumberFormat.UInt16LE, this.headerLength - 2);
+        }
+
+        getKernOffset(charCode1: number, charCode2: number) {
+            if (this.magic === V1_FONT_MAGIC) return 0;
+
+            const offset = this.charOffset(charCode1);
+            if (offset === -1) return 0;
+
+            const bitmapEntryStart = this.buffer.getNumber(NumberFormat.UInt16LE, offset) + this.bitmapStart;
+
+            const kernTableLength = this.buffer[bitmapEntryStart + 5];
+
+            if (kernTableLength === 0) return 0;
+
+            for (let i = 0; i < kernTableLength; i++) {
+                if (charCode2 === this.buffer.getNumber(NumberFormat.UInt16LE, bitmapEntryStart + this.bitmapHeaderLength + i * 3)) {
+                    return this.buffer.getNumber(NumberFormat.Int8LE, bitmapEntryStart + this.bitmapHeaderLength + i * 3 + 2);
+                }
+            }
+
+            return 0;
         }
 
         protected get numCharacters() {
@@ -218,7 +273,7 @@ namespace fancyText {
         }
 
         protected get bitmapStart() {
-            return Font.HEADER_LENGTH + Font.LOOKUP_TABLE_ENTRY_LENGTH * this.numCharacters
+            return this.headerLength + Font.LOOKUP_TABLE_ENTRY_LENGTH * this.numCharacters
         }
 
         protected charOffset(charCode: number) {
@@ -232,11 +287,11 @@ namespace fancyText {
                     return -1;
                 }
 
-                const current = this.buffer.getNumber(NumberFormat.UInt16LE, Font.HEADER_LENGTH + Font.LOOKUP_TABLE_ENTRY_LENGTH * guess);
+                const current = this.buffer.getNumber(NumberFormat.UInt16LE, this.headerLength + Font.LOOKUP_TABLE_ENTRY_LENGTH * guess);
                 // console.log("CURRENT " + current)
                 if (current === charCode) {
                     // console.log("FOUND IT!")
-                    return Font.HEADER_LENGTH + Font.LOOKUP_TABLE_ENTRY_LENGTH * guess + 2;
+                    return this.headerLength + Font.LOOKUP_TABLE_ENTRY_LENGTH * guess + 2;
                 }
                 else if (charCode < current) {
                     end = guess;
@@ -265,6 +320,10 @@ namespace fancyText {
             }
             else {
                 w += font.charWidth(code) + font.letterSpacing;
+
+                if (i < end - 1) {
+                    w += font.getKernOffset(code, text.charCodeAt(i + 1));
+                }
             }
         }
         return w;

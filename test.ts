@@ -1,6 +1,14 @@
 
-const lorem = "<wavy>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+const lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
+
+namespace customFont {
+    //% whenUsed
+    //% block="test"
+    //% blockIdentity="fancyText.__fontPicker"
+    //% fixedInstance
+    export const test: fancyText.BaseFont = new fancyText.Font(hex`dd19f16802000a0a010112005400000061002d0009090a00f6016100fd070005000500fd030102fd030500050007000000020002000200fe01020002000200000007070600fa003f212d2d212f38001e12121e1000`);
+}
 
 
 // // function printLine(line: Line) {
@@ -104,8 +112,9 @@ const lorem = "<wavy>Lorem ipsum dolor sit amet, consectetur adipiscing elit, se
 // pause(myTextSprite.remainingAnimationTime());
 // myTextSprite.setColor(4)
 
+scene.setBackgroundColor(13)
 let myTextSprite: fancyText.TextSprite = null
-myTextSprite = fancyText.create(lorem, 160, fancyText.twoToneColor(10, 11), fancyText.outline_two_tone_12)
+myTextSprite = fancyText.create(lorem, 160, fancyText.twoToneColor(10, 1), fancyText.outline_two_tone_12)
 myTextSprite.setTextFlag(fancyText.Flag.ChangeHeightWhileAnimating, false)
 myTextSprite.setTextFlag(fancyText.Flag.AlwaysOccupyMaxWidth, true)
 myTextSprite.setTextFlag(fancyText.Flag.ChangeWidthWhileAnimating, false)

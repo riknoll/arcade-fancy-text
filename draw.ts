@@ -117,6 +117,10 @@ namespace fancyText {
                 }
                 else {
                     x += font.charWidth(code) + font.letterSpacing;
+
+                    if (i < text.length - 1) {
+                        x += font.getKernOffset(code, text.charCodeAt(i + 1))
+                    }
                 }
             }
         }
@@ -184,6 +188,10 @@ namespace fancyText {
             }
 
             x += charWidth + font.letterSpacing;
+
+            if (i < text.length - 1) {
+                x += font.getKernOffset(charCode, text.charCodeAt(i + 1));
+            }
         }
     }
 

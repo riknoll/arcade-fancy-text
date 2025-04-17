@@ -43,14 +43,14 @@ namespace fancyText {
             this.width = 0;
         }
 
-        updateDimensions(defaultFont: fancyText.BaseFont, text: string) {
+        updateDimensions(defaultFont: fancyText.BaseFont, text: string, isLastLine: boolean) {
             this.width = 0;
             this.height = 0;
 
             for (const span of this.spans) {
                 const font = getFontForSpan(span.flags) || defaultFont;
                 this.width += getTextWidth(font, text, span.offset, span.offset + span.length);
-                this.height = Math.max(this.height, font.lineHeight)
+                this.height = Math.max(this.height, font.lineHeight + (isLastLine ? 0 : font.lineSpacing))
             }
         }
     }
@@ -299,7 +299,7 @@ namespace fancyText {
                         currentSpan.flags
                     )
                 );
-                currentLine.updateDimensions(defaultFont, text)
+                currentLine.updateDimensions(defaultFont, text, false)
                 // printLine(currentLine);
 
                 charIndex = end + delta
@@ -341,7 +341,8 @@ namespace fancyText {
                 pushSpan(lastBreakLocation, currentSpan.length, false, 1);
             }
         }
-        lines.push(currentLine)
+        lines.push(currentLine);
+        currentLine.updateDimensions(defaultFont, text, true);
 
         return lines;
     }
