@@ -1,4 +1,4 @@
-import { Font, deserializeFont, hexEncodeFont, trimGlyph } from "../../font-editor/src/lib/font";
+import { Font, deserializeFont, hexEncodeFont, trimGlyph, trimSortKern } from "../../font-editor/src/lib/font";
 import fs = require("fs");
 import path = require("path");
 import * as canvas from "canvas";
@@ -83,6 +83,8 @@ async function main() {
 function renderFont(font: Font, text: string) {
     const targetAspectRatio = 2 / 1;
 
+    font = trimSortKern(font);
+
     const trimmedGlyphs: {[index: string]: Glyph} = {};
     const placeHolderGlyph = createGlyph(font.meta, "");
     placeHolderGlyph.width = font.meta.letterSpacing;
@@ -95,19 +97,7 @@ function renderFont(font: Font, text: string) {
         }
         if (!trimmedGlyphs[char]) {
             const glyph = font.glyphs.find(g => g.character === char);
-
-            if (!glyph) {
-                trimmedGlyphs[char] = placeHolderGlyph;
-                continue;
-            }
-            const trimmed = trimGlyph(glyph, font);
-
-            if (!trimmed) {
-                trimmedGlyphs[char] = placeHolderGlyph;
-                continue;
-            }
-
-            trimmedGlyphs[char] = trimmed[0];
+            trimmedGlyphs[char] = glyph || placeHolderGlyph;
         }
     }
 

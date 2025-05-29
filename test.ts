@@ -114,7 +114,7 @@ namespace customFont {
 
 scene.setBackgroundColor(13)
 let myTextSprite: fancyText.TextSprite = null
-myTextSprite = fancyText.create(lorem, 160, fancyText.twoToneColor(10, 1), fancyText.outline_two_tone_12)
+myTextSprite = fancyText.create(lorem, 160, fancyText.twoToneColor(10, 1), fancyText.italic_small)
 myTextSprite.setTextFlag(fancyText.Flag.ChangeHeightWhileAnimating, false)
 myTextSprite.setTextFlag(fancyText.Flag.AlwaysOccupyMaxWidth, true)
 myTextSprite.setTextFlag(fancyText.Flag.ChangeWidthWhileAnimating, false)
