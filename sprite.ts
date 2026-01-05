@@ -77,6 +77,7 @@ namespace fancyText {
             this.color = 1;
             this.maxWidth = 0;
             this.nextId = 0;
+            this.flags |= sprites.Flag.HitboxOverlaps;
             this.textFlags = Flag.ChangeHeightWhileAnimating | Flag.AlwaysOccupyMaxWidth;
             this.setText(text);
             this.startLine = 0;
