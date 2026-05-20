@@ -123,6 +123,13 @@
 
 ![Preview of serif small font](previews/serif-small-font.png)
 
+### sports two tone
+
+* Character height: 40
+* Line height: 40
+
+![Preview of sports two tone font](previews/sports-two-tone-font.png)
+
 ### tiny 4
 
 * Character height: 4

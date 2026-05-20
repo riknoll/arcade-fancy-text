@@ -1,11 +1,12 @@
-import { Font, deserializeFont, hexEncodeFont, trimGlyph, trimSortKern } from "../../font-editor/src/lib/font";
+import { Font, FontMeta, deserializeFont, hexEncodeFont, trimSortKern } from "../../font-editor/src/lib/font";
 import fs = require("fs");
 import path = require("path");
+import parsePng = require("parse-png");
 import * as canvas from "canvas";
-import { Glyph, createGlyph, getPixel } from "../../font-editor/src/lib/glyph";
+import { Glyph, createGlyph, getPixel, setPixel } from "../../font-editor/src/lib/glyph";
 
-const testText = `The Quick Brown Fox Jumped Over The Lazy Dog`;
-const testText2 = `Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz 0123456789 .!?"'(){}[]`;
+const testText2 = `Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz 0123456789 .:!?"'(){}[]`;
+const uppercaseText = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:!?\"'(){}[]";
 async function main() {
     const fontRoot = path.resolve("fonts");
     const previewRoot = path.resolve("previews");
@@ -27,9 +28,21 @@ async function main() {
     for (const file of fontFiles) {
         const p = path.join(fontRoot, file);
 
-        const text = fs.readFileSync(p, { encoding: "utf-8" });
-        const parsed = deserializeFont(text);
-        const c = renderFont(parsed, testText2);
+        let parsed: Font;
+        if (path.extname(p) === ".png") {
+            parsed = await parseFontFromPng(p);
+        }
+        else if (path.extname(p) === ".json") {
+            const text = fs.readFileSync(p, { encoding: "utf-8" });
+            parsed = deserializeFont(text);
+        }
+        else {
+            continue;
+        }
+
+        const hasLowercase = parsed.glyphs.some(g => g.character >= "a" && g.character <= "z");
+
+        const c = hasLowercase ? renderFont(parsed, testText2, true) : renderFont(parsed, uppercaseText, false);
         const scaled = scaleCanvas(c, 4);
 
         const outPng = path.join(previewRoot, file.split(".")[0] + ".png");
@@ -80,14 +93,12 @@ async function main() {
     console.log("Wrote pxt.json");
 }
 
-function renderFont(font: Font, text: string) {
+function renderFont(font: Font, text: string, splitOnSpace: boolean) {
     const targetAspectRatio = 2 / 1;
 
     font = trimSortKern(font);
 
-    const trimmedGlyphs: {[index: string]: Glyph} = {};
-    const placeHolderGlyph = createGlyph(font.meta, "");
-    placeHolderGlyph.width = font.meta.letterSpacing;
+    const trimmedGlyphs: { [index: string]: Glyph } = {};
 
     for (let i = 0; i < text.length; i++) {
         const char = text.charAt(i);
@@ -97,17 +108,19 @@ function renderFont(font: Font, text: string) {
         }
         if (!trimmedGlyphs[char]) {
             const glyph = font.glyphs.find(g => g.character === char);
-            trimmedGlyphs[char] = glyph || placeHolderGlyph;
+            if (!glyph) continue;
+            trimmedGlyphs[char] = glyph;
         }
     }
 
-    const space = font.meta.wordSpacing;
-    const words = text.split(" ");
+    const space = splitOnSpace ? font.meta.wordSpacing : font.meta.letterSpacing;
+    const words = text.split(splitOnSpace ? " " : "");
     const wordWidths = words.map(word => {
         let width = 0;
 
         for (const char of word) {
             const glyph = trimmedGlyphs[char];
+            if (!glyph) continue;
             width += glyph.width + glyph.xOffset + font.meta.letterSpacing;
         }
 
@@ -204,9 +217,10 @@ function renderFont(font: Font, text: string) {
     return render;
 }
 
-function drawWord(word: string, glyphs: {[index: string]: Glyph}, font: Font, x: number, y: number, context: canvas.CanvasRenderingContext2D) {
+function drawWord(word: string, glyphs: { [index: string]: Glyph }, font: Font, x: number, y: number, context: canvas.CanvasRenderingContext2D) {
     for (const char of word) {
         const glyph = glyphs[char];
+        if (!glyph) continue;
         drawGlyph(
             glyph,
             x + glyph.xOffset,
@@ -253,6 +267,170 @@ function scaleCanvas(target: canvas.Canvas, scaleFactor: number) {
     }
 
     return out;
+}
+
+class Bitmask {
+    protected mask: Uint8Array;
+
+    constructor(public width: number, public height: number) {
+        this.mask = new Uint8Array(Math.ceil(width * height / 8));
+    }
+
+    set(col: number, row: number) {
+        const cellIndex = col + this.width * row;
+        const index = cellIndex >> 3;
+        const offset = cellIndex & 7;
+        this.mask[index] |= (1 << offset);
+    }
+
+    get(col: number, row: number) {
+        const cellIndex = col + this.width * row;
+        const index = cellIndex >> 3;
+        const offset = cellIndex & 7;
+        return (this.mask[index] >> offset) & 1;
+    }
+}
+
+interface PNGGlyphLayer {
+    mask: Bitmask;
+    color: string;
+}
+
+interface PNGGlyph {
+    width: number;
+    height: number;
+    layers: PNGGlyphLayer[];
+}
+
+async function parseFontFromPng(p: string): Promise<Font> {
+    const data = fs.readFileSync(p);
+    const png = await parsePng(data);
+
+    let rowStart = 0;
+    const glyphs: PNGGlyph[] = [];
+
+    let maxWidth = 0;
+    let maxHeight = 0;
+
+
+    for (let y = 0; y < png.height + 1; y++) {
+        let empty = true;
+        for (let x = 0; x < png.width; x++) {
+            if (!isEmptyPixel(x, y, png)) {
+                empty = false;
+                break;
+            }
+        }
+        if (empty) {
+            if (y > rowStart + 1) {
+                let colStart = 0;
+                for (let x = 0; x < png.width + 1; x++) {
+                    let colEmpty = true;
+                    for (let yy = rowStart; yy < y; yy++) {
+                        if (!isEmptyPixel(x, yy, png)) {
+                            colEmpty = false;
+                            break;
+                        }
+                    }
+                    if (colEmpty) {
+                        if (x > colStart + 1) {
+                            const glyph = extractGlyph(png, colStart, rowStart, x, y);
+                            if (glyph.layers.length) {
+                                maxWidth = Math.max(maxWidth, glyph.width);
+                                maxHeight = Math.max(maxHeight, glyph.height);
+                                glyphs.push(glyph);
+                            }
+                        }
+                        colStart = x;
+                    }
+                }
+            }
+            rowStart = y;
+        }
+    }
+
+    const letters = fs.readFileSync(p.replace(".png", ".txt"), "utf-8").split("");
+
+    const fontMeta: FontMeta = {
+        defaultWidth: maxWidth,
+        defaultHeight: maxHeight,
+        descenderHeight: 0,
+        ascenderHeight: 0,
+        xHeight: 0,
+        kernWidth: 0,
+        autoKern: true,
+        letterSpacing: 1,
+        wordSpacing: Math.max(maxWidth >> 2, 3),
+        lineSpacing: 1,
+        twoTone: glyphs.some(g => g.layers.length > 1)
+    };
+
+    const fontGlyphs: Glyph[] = glyphs.map((g, i) => pngGlyphToGlyph(g, fontMeta, letters[i], fontMeta.twoTone ? ["#000000", "#ffffff"] : ["#000000"]));
+    return new Font(fontMeta, fontGlyphs);;
+}
+
+function pngGlyphToGlyph(pngGlyph: PNGGlyph, meta: FontMeta, character: string, colors: string[]): Glyph {
+    const glyph = createGlyph(meta, character);
+    const yOffset = meta.defaultHeight - pngGlyph.height;
+
+    for (let colorIndex = 0; colorIndex < colors.length; colorIndex++) {
+        const layer = pngGlyph.layers.find(l => l.color === colors[colorIndex]);
+
+        if (!layer) continue;
+
+        for (let x = 0; x < pngGlyph.width; x++) {
+            for (let y = 0; y < pngGlyph.height; y++) {
+                if (layer.mask.get(x, y)) {
+                    setPixel(glyph, x, y + yOffset, colorIndex, true);
+                }
+            }
+        }
+    }
+
+    return glyph;
+}
+
+function isEmptyPixel(x: number, y: number, png: any): boolean {
+    if (x >= png.width || y >= png.height) return true;
+
+    const index = (x + y * png.width) << 2;
+    return !png.data[index + 3];
+}
+
+function extractGlyph(png: any, xStart: number, yStart: number, xEnd: number, yEnd: number): PNGGlyph {
+    const width = xEnd - xStart;
+    const height = yEnd - yStart;
+
+    const layers: PNGGlyphLayer[] = [];
+
+    for (let x = xStart; x < xEnd; x++) {
+        for (let y = yStart; y < yEnd; y++) {
+            const index = (x + y * png.width) << 2;
+            const alpha = png.data[index + 3];
+            if (alpha) {
+                const color = rgbToHex(png.data[index], png.data[index + 1], png.data[index + 2]);
+                let layer = layers.find(l => l.color === color);
+                if (!layer) {
+                    layer = {
+                        color,
+                        mask: new Bitmask(width, height)
+                    };
+                    layers.push(layer);
+                }
+                layer.mask.set(x - xStart, y - yStart);
+            }
+        }
+    }
+
+    return {
+        width,
+        height,
+        layers
+    };
+}
+
+function rgbToHex(r: number, g: number, b: number) {
+    return "#" + [r, g, b].map(x => x.toString(16).padStart(2, "0")).join("");
 }
 
 main();

@@ -8,7 +8,6 @@
   "license": "MIT",
   "dependencies": {
     "canvas": "3.2.3",
-    "parse-png": "^2.1.0",
     "typescript": "^5.1.6"
   },
   "devDependencies": {

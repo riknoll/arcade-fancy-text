@@ -45,6 +45,7 @@
         "built-fonts/rounded-large-font.ts",
         "built-fonts/rounded-small-font.ts",
         "built-fonts/serif-small-font.ts",
+        "built-fonts/sports-two-tone-font.ts",
         "built-fonts/tiny-4-font.ts",
         "main.ts"
     ],
